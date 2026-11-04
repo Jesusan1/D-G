@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151b19">
+  <meta name="description" content="Rutas de Tibia: aventura RPG de navegador inspirada en el universo de Tibia. Proyecto fan no oficial.">
+  <title>Rutas de Tibia — Crónicas del continente</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #ded8c4;
+      --muted: #9da69e;
+      --gold: #c8a86a;
+      --rust: #b86f4d;
+      --leaf: #7d9a64;
+      --panel: #202a27;
+      --panel-deep: #161e1c;
+      --line: #46534c;
+      --shadow: #080c0bb8;
+    }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; color: var(--paper); font-family: Georgia, "Palatino Linotype", serif;
+      background: linear-gradient(180deg, #111917d9, #151b19 440px),
+        repeating-linear-gradient(135deg, #26342e 0 1px, transparent 1px 5px), #151b19; }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .12; z-index: -1;
+      background: radial-gradient(ellipse at 14% 0, #71836a 0, transparent 35%), radial-gradient(ellipse at 90% 6%, #8b5a43 0, transparent 29%); }
+    button { font: inherit; }
+    .shell { width: min(1160px, calc(100% - 32px)); margin: auto; padding: 28px 0 48px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 0 0 17px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--gold); color: var(--gold); font-size: 23px; transform: rotate(45deg); }
+    .brand-mark span { transform: rotate(-45deg); }
+    .eyebrow, .section-kicker, .meter-label, .slot-label, .small-label { font: 10px/1.4 "Trebuchet MS", sans-serif; letter-spacing: .15em; text-transform: uppercase; }
+    .eyebrow { color: var(--gold); }
+    .brand h1 { margin: 2px 0 0; font-size: 1.25rem; font-weight: 400; }
+    .account { display: flex; align-items: center; gap: 12px; color: var(--muted); font: 12px "Trebuchet MS", sans-serif; }
+    .account strong { color: var(--paper); font-weight: 600; }
+    .top-button, .button { min-height: 40px; padding: 9px 14px; color: var(--paper); border: 1px solid var(--line); background: #25312c; cursor: pointer; transition: .18s ease; }
+    .top-button:hover, .button:hover:not(:disabled) { border-color: var(--gold); background: #344239; transform: translateY(-1px); }
+    .button:focus-visible, .top-button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .button:disabled { opacity: .45; cursor: not-allowed; }
+    .button.primary { color: #171b18; border-color: var(--gold); background: var(--gold); font-weight: 700; }
+    .button.primary:hover:not(:disabled) { background: #e0c58c; }
+    .button.quiet { background: transparent; }
+    .view[hidden] { display: none; }
+    .intro-row { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding: 29px 0 20px; }
+    .intro-row h2 { margin: 5px 0 4px; font-size: clamp(1.65rem, 4vw, 2.45rem); font-weight: 400; }
+    .intro-row p { max-width: 650px; margin: 0; color: var(--muted); line-height: 1.5; }
+    .character-name-form { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .character-name-form input { width: 210px; min-height: 32px; padding: 6px 8px; color: var(--paper); border: 1px solid #526052; background: #101614; font: 12px "Trebuchet MS", sans-serif; }
+    .session-panel { margin: 12px 0 16px; padding: 12px; border: 1px solid var(--line); background: linear-gradient(145deg, #26332f, #1b272b 60%, #302a25); }
+    .session-panel[hidden] { display: none; }
+    .session-panel h3 { margin: 0 0 8px; color: var(--gold); font: 10px "Trebuchet MS", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+    .session-list { display: flex; flex-wrap: wrap; gap: 7px; }
+    .session-entry { display: flex; align-items: center; gap: 5px; padding: 5px; border: 1px solid #46534c; background: #18211e; }
+    .session-entry span { color: var(--paper); font: 10px "Trebuchet MS", sans-serif; }
+    .session-entry small { display: block; color: var(--muted); font: 8px "Trebuchet MS", sans-serif; }
+    .session-entry .button { min-height: 28px; padding: 4px 7px; font-size: 9px; }
+    .session-create { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 9px; }
+    .session-create input { width: min(230px, 100%); min-height: 34px; padding: 6px 8px; color: var(--paper); border: 1px solid #526052; background: #101614; font: 11px "Trebuchet MS", sans-serif; }
+    .section-kicker { color: var(--gold); }
+    .class-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .class-card { position: relative; display: flex; min-height: 300px; padding: 0; flex-direction: column; overflow: hidden; text-align: left; color: var(--paper); border: 1px solid var(--line); background: var(--panel-deep); cursor: pointer; transition: border-color .2s, transform .2s, background .2s; }
+    .class-card:hover, .class-card:focus-visible { border-color: var(--gold); background: #26332e; transform: translateY(-3px); outline: none; }
+    .class-art { position: relative; display: grid; place-items: center; height: 142px; overflow: hidden; background: linear-gradient(150deg, #435145, #242e2b 75%); }
+    .class-art::before, .scene::before { content: ""; position: absolute; inset: 0; opacity: .5; background: linear-gradient(180deg, transparent 53%, #101715 100%), repeating-linear-gradient(0deg, #ffffff08 0 1px, transparent 1px 4px); }
+    .class-art .glyph { position: relative; color: #e0c689; font-size: 61px; text-shadow: 4px 5px 0 #161b1880; }
+    .class-card.has-art .class-art .glyph { display: none; }
+    .class-art .vocation-sprite { position: relative; width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(4px 5px 0 #161b1880); }
+    .class-card:nth-child(2) .class-art { background: linear-gradient(145deg, #526347, #27382f 78%); }
+    .class-card:nth-child(3) .class-art { background: linear-gradient(145deg, #54485d, #292733 78%); }
+    .class-card:nth-child(4) .class-art { background: linear-gradient(145deg, #72533e, #302a26 78%); }
+    .class-copy { padding: 15px 16px 16px; }
+    .class-copy h3 { margin: 0 0 5px; font-size: 1.28rem; font-weight: 400; }
+    .class-copy p { min-height: 41px; margin: 0 0 12px; color: var(--muted); font: 12px/1.5 "Trebuchet MS", sans-serif; }
+    .class-stats { display: flex; gap: 12px; color: #c1c7bb; font: 10px "Trebuchet MS", sans-serif; text-transform: uppercase; }
+    .class-stats b { color: var(--gold); font-weight: 600; }
+    .vocation-map { display: block; margin-top: 12px; padding: 6px 8px; border: 1px solid #49504e; color: #adb7b2; background: repeating-linear-gradient(0deg, #293333 0 1px, #20282a 1px 5px); font: 9px/1.35 "Trebuchet MS", sans-serif; }
+    .vocation-map svg { display: block; width: 100%; height: 28px; margin-bottom: 4px; }
+    .vocation-map path { fill: none; stroke: #c8a86a; stroke-width: 2; stroke-dasharray: 4 3; }
+    .vocation-map circle { fill: #d3b86e; stroke: #252d2a; stroke-width: 2; }
+    .class-card:nth-child(2) .vocation-map path { stroke: #7fb4aa; }
+    .class-card:nth-child(2) .vocation-map circle { fill: #86c3b4; }
+    .class-card:nth-child(3) .vocation-map path { stroke: #bd8ab6; }
+    .class-card:nth-child(3) .vocation-map circle { fill: #d59dc2; }
+    .class-card:nth-child(4) .vocation-map path { stroke: #d08a63; }
+    .class-card:nth-child(4) .vocation-map circle { fill: #df9c71; }
+    .footnote { margin: 17px 0 0; color: var(--muted); font: 11px/1.5 "Trebuchet MS", sans-serif; }
+    .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; padding-top: 22px; }
+    .main-column, .side-column { min-width: 0; }
+    .progress-panel, .panel, .story-panel { border: 1px solid var(--line); background: linear-gradient(145deg, #222d29, #19211f); box-shadow: 0 10px 26px var(--shadow); }
+    .progress-panel { padding: 15px 17px; }
+    .progress-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .identity { display: flex; align-items: center; gap: 12px; }
+    .class-badge { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--gold); color: var(--gold); font-size: 23px; background: #141c19; }
+    .identity h2 { margin: 0 0 3px; font-size: 1.15rem; font-weight: 400; }
+    .identity-name { display: flex; align-items: center; gap: 7px; }
+    .rename-character { min-height: 25px; padding: 3px 7px; color: var(--muted); border: 1px solid #46534c; background: #18211e; font: 9px "Trebuchet MS", sans-serif; cursor: pointer; }
+    .rename-character:hover { color: var(--paper); border-color: var(--gold); }
+    .identity p { margin: 0; color: var(--muted); font: 11px "Trebuchet MS", sans-serif; }
+    .level-badge { padding: 7px 10px; color: #171b18; background: var(--gold); font: bold 11px "Trebuchet MS", sans-serif; text-transform: uppercase; white-space: nowrap; }
+    .meters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 15px; }
+    .meter-heading { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .meter-heading strong { color: var(--paper); font-weight: 600; }
+    .meter { height: 8px; overflow: hidden; border: 1px solid #ffffff12; background: #101614; }
+    .meter-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #8b4937, #d07b53); transition: width .3s ease; }
+    .meter-fill.xp { background: linear-gradient(90deg, #98804b, #d5bc79); }
+    .scene { position: relative; display: flex; min-height: 228px; margin-top: 14px; align-items: end; overflow: hidden; border: 1px solid #5b654e; background: linear-gradient(180deg, #4b6453 0%, #2f4739 47%, #28352c 48%, #19221d 100%); }
+    .scene::after { content: ""; position: absolute; inset: 0; opacity: .6; background: radial-gradient(ellipse at 20% 75%, #a1804b32 0, transparent 40%), repeating-linear-gradient(90deg, transparent 0 42px, #121a1850 43px 48px); }
+    .scene-copy { position: relative; z-index: 1; width: 100%; padding: 18px 19px; background: linear-gradient(0deg, #111816e8, transparent); }
+    .scene-copy .section-kicker { color: #d7bc7c; }
+    .scene-copy h2 { margin: 5px 0 4px; font-size: 1.6rem; font-weight: 400; }
+    .scene-copy p { max-width: 570px; margin: 0; color: #d1d1c1; font-size: .92rem; line-height: 1.45; }
+    .decision-panel { padding: 14px 15px; border: 1px solid var(--line); border-top: 0; background: #19211f; }
+    .decision-title { margin: 0 0 10px; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .decision-options { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .decision { min-height: 67px; padding: 10px 11px; text-align: left; }
+    .decision strong { display: block; margin-bottom: 4px; color: var(--paper); font-size: .95rem; font-weight: 400; }
+    .decision span { color: var(--muted); font: 10px/1.4 "Trebuchet MS", sans-serif; }
+    .battle { margin-top: 13px; padding: 15px; border: 1px solid var(--line); background: #1b2421; }
+    .battle { position: relative; isolation: isolate; overflow: hidden; background: #25272c; }
+    .battle::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .8; background: linear-gradient(180deg, #324c50a8, #171d21e8), repeating-linear-gradient(120deg, transparent 0 42px, #d6bd7920 43px 45px); }
+    .battle[data-biome="swamp"]::before { background: linear-gradient(180deg, #52665a99, #202a30ed), repeating-linear-gradient(0deg, #87a7a326 0 2px, transparent 2px 18px); }
+    .battle[data-biome="mountain"]::before, .battle[data-biome="dragonLair"]::before { background: linear-gradient(180deg, #815645a8, #221e24ed), repeating-linear-gradient(135deg, transparent 0 35px, #cf966a28 36px 39px); }
+    .battle[data-biome="amazon"]::before::after { background: #493c58; }
+    .spell-list { display: grid; gap: 5px; }
+    .spell-button { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; min-height: 38px; padding: 6px 8px; text-align: left; }
+    .spell-button strong { color: var(--paper); font: 10px "Trebuchet MS", sans-serif; }
+    .spell-button small { grid-column: 1; color: var(--muted); font: 8px "Trebuchet MS", sans-serif; }
+    .spell-button .spell-cost { grid-column: 2; grid-row: 1 / span 2; color: #a4c5d5; font: 9px "Trebuchet MS", sans-serif; }
+    .spell-button.locked { opacity: .55; }
+    .automation-status { color: #a8c4c7; font: 9px "Trebuchet MS", sans-serif; }
+    .battle[hidden] { display: none; }
+    .monster-row { display: grid; grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr); gap: 10px; align-items: center; }
+    .combatant-card { min-width: 0; padding: 9px; border: 1px solid #435047; background: #18201d; }
+    .combatant-art { display: grid; place-items: center; height: 76px; margin-bottom: 7px; overflow: hidden; border: 1px solid #59634e; background: radial-gradient(ellipse at center, #52644b, #202a25 75%); }
+    .combatant-art img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; }
+    .combatant-art .portrait-fallback { display: block; position: absolute; color: #d5bc79; font-size: 38px; }
+    .combatant-art.broken img { display: none; }
+    .combatant-art:not(.broken) img:not([src]), .combatant-art.broken img { display: none; }
+    .combatant-art:not(.broken) img[src] + .portrait-fallback { display: none; }
+    .combatant-name { display: block; overflow: hidden; color: var(--paper); font: 11px "Trebuchet MS", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .combatant-level { display: block; margin-top: 3px; color: var(--muted); font: 9px "Trebuchet MS", sans-serif; }
+    .combat-vs { color: var(--gold); text-align: center; font: italic 12px Georgia, serif; }
+    .combatant-card .enemy-health { margin-top: 8px; }
+    .combatant-card .enemy-health { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+    .combatant-card .enemy-health .meter { height: 6px; }
+    .combatant-card .enemy-health .meter { grid-column: 1 / -1; }
+    .monster-image { display: grid; place-items: center; height: 95px; overflow: hidden; border: 1px solid #59634e; background: radial-gradient(ellipse at center, #52644b, #202a25 75%); }
+    .monster-image img { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
+    .monster-image .monster-fallback { display: none; color: #d5bc79; font-size: 43px; }
+    .monster-image.broken img { display: none; }
+    .monster-image.broken .monster-fallback { display: block; }
+    .monster-info h3 { margin: 0 0 5px; font-size: 1rem; font-weight: 400; }
+    .monster-info p { margin: 0; color: var(--muted); font: 9px/1.35 "Trebuchet MS", sans-serif; }
+    .enemy-health { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .enemy-health .meter { height: 7px; }
+    .enemy-health .meter-fill { background: linear-gradient(90deg, #804a37, #c87957); }
+    .combat-actions { display: flex; gap: 8px; margin-top: 13px; }
+    .combat-actions .button { flex: 1; padding-inline: 8px; font-size: 12px; }
+    .battle-message { min-height: 18px; margin: 10px 0 0; color: var(--gold); font: italic 12px/1.4 Georgia, serif; }
+    .story-panel { margin-top: 13px; }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; border-bottom: 1px solid var(--line); }
+    .panel-heading h3 { margin: 0; color: var(--gold); font: 10px "Trebuchet MS", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+    .panel-heading span { color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .journal { display: flex; max-height: 128px; padding: 11px 13px; flex-direction: column; gap: 7px; overflow-y: auto; }
+    .journal p { margin: 0; color: #bfc5b9; font-size: .82rem; line-height: 1.4; }
+    .journal p:last-child { color: var(--paper); }
+    .side-column { display: flex; flex-direction: column; gap: 13px; }
+    .panel { padding: 0; }
+    .panel-body { padding: 12px 13px; }
+    .equipment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .equip-slot { min-height: 52px; padding: 7px 8px; border: 1px solid #3c4942; background: #18201d; }
+    .slot-label { display: block; margin-bottom: 4px; color: #849087; font-size: 8px; }
+    .slot-item { display: block; overflow: hidden; color: var(--paper); font: 11px/1.25 "Trebuchet MS", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .slot-item.empty { color: #69756e; font-style: italic; }
+    .inventory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-height: 210px; padding: 5px; gap: 4px; overflow-y: auto; border: 1px solid #101614; background: #101614; }
+    .container-window { margin-top: 9px; padding: 8px; border: 1px solid #806f4e; background: linear-gradient(145deg, #29382f, #202b31 55%, #302c27); box-shadow: inset 0 0 18px #0005; }
+    .container-window[hidden] { display: none; }
+    .container-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; color: var(--gold); font: 10px "Trebuchet MS", sans-serif; }
+    .container-close { min-height: 22px; padding: 2px 6px; color: var(--muted); border: 1px solid #526052; background: #17201e; font: 9px "Trebuchet MS", sans-serif; cursor: pointer; }
+    .container-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .container-slot { position: relative; display: grid; min-height: 38px; padding: 2px; place-items: center; color: #707b74; border: 1px solid #536154; background: #18211e; font: 9px "Trebuchet MS", sans-serif; }
+    .container-slot img { width: 27px; height: 27px; object-fit: contain; image-rendering: pixelated; }
+    .container-slot .stack-count { position: absolute; right: 2px; bottom: 1px; color: #fff0c8; text-shadow: 1px 1px #000; font: bold 9px "Trebuchet MS", sans-serif; }
+    .container-store { display: block; width: 100%; margin-top: 7px; min-height: 29px; padding: 5px; font-size: 9px; }
+    .bag-slot { position: relative; display: grid; width: 100%; aspect-ratio: 1; min-height: 44px; padding: 3px; place-items: center; border: 1px solid #3e4b42; background: linear-gradient(145deg, #27342d, #18201d); cursor: pointer; }
+    .bag-slot:hover, .bag-slot.selected { border-color: var(--gold); background: #344337; }
+    .bag-slot img { width: 30px; height: 30px; object-fit: contain; image-rendering: pixelated; }
+    .bag-slot .item-fallback { display: none; color: #dbc88d; font-size: 20px; }
+    .bag-slot.sprite-failed .item-fallback { display: block; }
+    .bag-slot .stack-count { position: absolute; right: 2px; bottom: 1px; color: #fff0c8; text-shadow: 1px 1px #000; font: bold 9px "Trebuchet MS", sans-serif; }
+    .bag-slot:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+    .item-inspector { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; padding: 8px; border: 1px solid #3c4942; background: #18201d; }
+    .item-inspector[hidden], .stack-tools[hidden] { display: none; }
+    .selected-item-info { display: flex; min-width: 0; align-items: center; gap: 8px; }
+    .selected-item-info img { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+    .selected-item-info strong { display: block; overflow: hidden; color: var(--paper); font: 10px "Trebuchet MS", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .selected-item-info small { color: var(--muted); font: 9px "Trebuchet MS", sans-serif; }
+    .item-actions { display: flex; justify-content: end; gap: 5px; }
+    .item-actions .button { min-height: 30px; padding: 5px 7px; font-size: 9px; }
+    .stack-tools { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; }
+    .stack-tools label { color: var(--muted); font: 9px "Trebuchet MS", sans-serif; }
+    .stack-tools input, .shop-quantity { width: 58px; min-height: 29px; padding: 4px 6px; color: var(--paper); border: 1px solid #526052; background: #101614; font: 11px "Trebuchet MS", sans-serif; }
+    .stack-tools .button { min-height: 29px; padding: 4px 8px; font-size: 9px; }
+    .shop-tabs { display: flex; gap: 5px; padding: 10px 12px 0; }
+    .shop-tabs .button { min-height: 30px; padding: 5px 9px; font-size: 10px; }
+    .shop-tabs .button.active { color: #171b18; border-color: var(--gold); background: var(--gold); }
+    .shop-list { display: flex; max-height: 210px; flex-direction: column; gap: 5px; overflow-y: auto; }
+    .shop-row { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 7px; align-items: center; padding: 6px; border: 1px solid #34413a; background: #18201d; }
+    .shop-row img { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+    .shop-row strong { display: block; overflow: hidden; color: var(--paper); font: 10px "Trebuchet MS", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .shop-row small { color: var(--muted); font: 9px "Trebuchet MS", sans-serif; }
+    .shop-row .button { min-height: 28px; padding: 4px 7px; font-size: 9px; }
+    .shop-quantity-row { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .shop-quantity-row[hidden] { display: none; }
+    .inventory-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 7px 8px; border: 1px solid #34413a; background: #18201d; }
+    .inventory-item strong { display: block; color: var(--paper); font: 11px "Trebuchet MS", sans-serif; }
+    .inventory-item small { color: var(--muted); font: 9px "Trebuchet MS", sans-serif; }
+    .inventory-item .equip-button { min-height: 28px; padding: 4px 7px; font-size: 10px; }
+    .empty-note { margin: 2px 0; color: var(--muted); font: 11px/1.5 "Trebuchet MS", sans-serif; }
+    .coin-line { display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--muted); font: 11px "Trebuchet MS", sans-serif; }
+    .coin-line strong { color: var(--gold); }
+    .stat-line { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 9px; border-top: 1px solid #34413a; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .stat-line strong { display: block; margin-top: 3px; color: var(--paper); font-size: 12px; }
+    .side-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .side-actions .button { min-height: 36px; padding: 7px; font-size: 11px; }
+    .map-panel { margin: 14px 0 0; }
+    .map-panel .panel-body { padding: 10px; }
+    .world-map { position: relative; height: clamp(280px, 42vw, 440px); overflow: hidden; border: 1px solid #7a8e9a; background: #162d3c; box-shadow: inset 0 0 0 1px #0c1b27, 0 10px 28px #050b1022; }
+    .world-map .map-node { translate: none; scale: none; }
+    .world-map { touch-action: none; user-select: none; }
+    .map-help { margin-top: 6px; color: #aab9bd; font: 9px "Trebuchet MS", sans-serif; }
+    .world-map::after { content: "Mapa esquemático · rutas de caza"; position: absolute; right: 8px; bottom: 7px; z-index: 1; padding: 3px 6px; color: #e9dfbd; background: #142330c7; font: 9px "Trebuchet MS", sans-serif; pointer-events: none; }
+    .world-map .world-map-svg { display: block; transform-origin: center; transition: transform .12s ease-out; }
+    .world-map::before { content: none; }
+    .world-map-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .map-grid { fill: url(#map-grid-pattern); opacity: .45; }
+    .map-mainland { fill: url(#map-land-gradient); stroke: #d7bd7c; stroke-width: 3; stroke-linejoin: round; }
+    .map-island { fill: #8a7957; stroke: #d7bd7c; stroke-width: 2.5; }
+    .map-biome { opacity: .65; }
+    .map-mountain { fill: #747b83; stroke: #d3c18e; stroke-width: 1.5; }
+    .map-forest { fill: #35564d; stroke: #a4bd91; stroke-width: 1; }
+    .map-desert { fill: #b78350; stroke: #efd08a; stroke-width: 1; }
+    .map-swamp { fill: #514b67; stroke: #a996c0; stroke-width: 1; }
+    .map-river { fill: none; stroke: #86c3d0; stroke-width: 5; stroke-linecap: round; opacity: .85; }
+    .map-route { fill: none; stroke: #f0d18d; stroke-width: 2; stroke-dasharray: 7 7; opacity: .86; vector-effect: non-scaling-stroke; }
+    .map-label { fill: #fff0c2; font: 13px Georgia, serif; paint-order: stroke; stroke: #192a34; stroke-width: 3px; stroke-linejoin: round; }
+    .map-region { fill: #ead59c; font: italic 11px Georgia, serif; opacity: .9; paint-order: stroke; stroke: #243543; stroke-width: 3px; }
+    .map-sea-label { fill: #9bc6d2; font: italic 14px Georgia, serif; letter-spacing: 2px; opacity: .82; }
+    .map-node { position: absolute; z-index: 1; display: grid; width: 34px; height: 34px; min-height: 34px; padding: 0; place-items: center; transform: translate(-50%, -50%); border: 1px solid #e8d494; border-radius: 50%; color: #f0dfab; background: #202a25eF; font: bold 10px "Trebuchet MS", sans-serif; cursor: pointer; }
+    .map-node { position: absolute; z-index: 1; display: grid; width: 34px; height: 34px; padding: 0; place-items: center; transform: translate(-50%, -50%); border: 1px solid #b7a56f; border-radius: 50%; color: #f0dfab; background: #222b24; font: bold 10px "Trebuchet MS", sans-serif; cursor: pointer; }
+    .map-node:hover:not(:disabled), .map-node.selected { border-color: #fff0b4; color: #151a16; background: #d3b86e; box-shadow: 0 0 0 4px #d3b86e35; }
+    .map-node:disabled { color: #777a6d; border-color: #75786c; background: #242a25; opacity: .58; cursor: not-allowed; }
+    .map-node:focus-visible { outline: 2px solid #fff0b4; outline-offset: 3px; }
+    .map-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 10px; align-items: center; margin-top: 9px; }
+    .map-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 12px; color: var(--muted); font: 10px "Trebuchet MS", sans-serif; }
+    .map-legend strong { color: var(--paper); font-weight: 500; }
+    .map-hunt { width: 100%; min-height: 36px; padding: 7px; font-size: 11px; }
+    .map-reference { grid-column: 1 / -1; color: #8fa99e; font: 9px "Trebuchet MS", sans-serif; text-decoration-color: #68796d; }
+    .map-reference:hover { color: var(--gold); }
+    .map-node { box-shadow: 0 2px 8px #06121bbd, inset 0 0 0 3px #ffffff12; backdrop-filter: blur(3px); }
+    .map-tools { position: absolute; top: 9px; right: 9px; z-index: 2; display: flex; gap: 4px; }
+    .map-tools button { min-width: 30px; min-height: 29px; padding: 3px 7px; border: 1px solid #d5c28a99; color: #f7e9c4; background: #142632dc; cursor: pointer; }
+    .quest-list { display: grid; gap: 8px; }
+    .quest-card { padding: 9px; border: 1px solid #53614c; background: linear-gradient(135deg,#26342d,#1b2525); }
+    .quest-card h4 { margin: 0 0 4px; color: #ead59c; font: 12px Georgia,serif; }
+    .quest-card p,.quest-card small { margin: 0; color: #b8c0ae; font: 10px/1.45 "Trebuchet MS",sans-serif; }
+    .quest-card .button { width: 100%; min-height: 30px; margin-top: 7px; font-size: 10px; }
+    .quest-track { height: 5px; margin-top: 7px; background:#101614; }
+    .quest-track span { display:block; height:100%; background:linear-gradient(90deg,#768e60,#d3b86e); }
+    .zone-roster { margin-top: 10px; padding-top: 9px; border-top: 1px solid #3b4842; }
+    .zone-roster-heading { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 7px; color: var(--muted); font: 9px "Trebuchet MS", sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+    .zone-monsters { display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 5px; }
+    .zone-monster { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 2px 6px; align-items: center; min-width: 0; padding: 5px 6px; border: 1px solid #46514a; background: #1b2425; }
+    .zone-monster.locked { opacity: .52; }
+    .zone-monster img { grid-row: span 2; width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+    .zone-monster strong { overflow: hidden; color: var(--paper); font: 9px "Trebuchet MS", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .zone-monster small { color: #bca36d; font: 8px "Trebuchet MS", sans-serif; }
+    .skill-list { display: flex; flex-direction: column; gap: 10px; }
+    .skill-row { display: grid; grid-template-columns: 1fr auto; gap: 5px 8px; align-items: center; }
+    .skill-row span { color: #c3c8bd; font: 10px "Trebuchet MS", sans-serif; }
+    .skill-row strong { color: var(--gold); font: 11px "Trebuchet MS", sans-serif; }
+    .skill-track { grid-column: 1 / -1; height: 5px; overflow: hidden; background: #101614; }
+    .skill-fill { height: 100%; background: linear-gradient(90deg, #718b60, #c0b875); transition: width .25s ease; }
+    .training-note { margin: 10px 0 0; color: var(--muted); font: 9px/1.45 "Trebuchet MS", sans-serif; }
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 5; max-width: min(360px, calc(100% - 36px)); padding: 12px 15px; border: 1px solid var(--gold); color: var(--paper); background: #202a27; box-shadow: 0 8px 25px #0008; opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 820px) { .class-grid { grid-template-columns: repeat(2, 1fr); } .game-layout { grid-template-columns: minmax(0, 1fr) 260px; gap: 12px; } }
+    @media (max-width: 650px) { .shell { width: min(100% - 22px, 560px); padding-top: 16px; } .masthead { align-items: flex-start; } .account { gap: 7px; flex-direction: column; align-items: end; } .account .top-button { min-height: 34px; padding: 6px 9px; } .intro-row { align-items: flex-start; flex-direction: column; padding-top: 22px; } .game-layout { grid-template-columns: 1fr; } .side-column { display: grid; grid-template-columns: 1fr 1fr; align-items: start; } .meters { gap: 9px; } }
+    @media (max-width: 430px) { .class-grid { gap: 8px; } .class-card { min-height: 270px; } .class-art { height: 110px; } .class-copy { padding: 12px; } .class-copy p { min-height: 58px; } .side-column { display: flex; } .decision-options { grid-template-columns: 1fr; } .monster-row { grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 5px; } .combatant-card { padding: 5px; } .combatant-art { height: 64px; } .combatant-art img { width: 54px; height: 54px; } .combatant-name { font-size: 9px; } .combat-vs { font-size: 9px; } .combat-actions { flex-wrap: wrap; } .combat-actions .button { flex-basis: 30%; } .bag-slot { min-height: 48px; } .world-map { height: 260px; } .map-node { width: 29px; height: 29px; min-height: 29px; font-size: 9px; } .map-controls { grid-template-columns: 1fr; } .map-reference { grid-column: auto; } .meters { gap: 6px; } .meter-heading { font-size: 8px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+    /* Animaciones de combate: no se reemplazan los nodos del personaje al atacar. */
+    .combatant-art { position: relative; isolation: isolate; }
+    .combatant-art img { position: relative; z-index: 1; }
+    .combatant-art.is-attacking { animation: player-lunge .38s cubic-bezier(.2,.8,.2,1); }
+    .combatant-art.is-hit { animation: target-hit .34s ease-out; }
+    .combatant-art.is-attacking::after, .combatant-art.is-hit::after {
+      content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(circle, #f1d28b66, transparent 68%);
+      animation: impact-flash .38s ease-out forwards;
+    }
+    .battle-message { transition: color .18s ease, opacity .18s ease; }
+    .world-map-svg .map-route { animation: map-route-flow 18s linear infinite; }
+    .world-map-svg .map-river { animation: river-glow 5s ease-in-out infinite alternate; }
+    .map-node { animation: map-node-breathe 3.2s ease-in-out infinite; }
+    .map-node.selected { animation: map-node-selected 1.8s ease-in-out infinite; }
+    @keyframes player-lunge { 0% { transform: translateX(0) scale(1); } 42% { transform: translateX(13px) scale(1.08); } 100% { transform: translateX(0) scale(1); } }
+    @keyframes target-hit { 0%,100% { transform: translateX(0); filter: brightness(1); } 25% { transform: translateX(-5px); filter: brightness(1.8) sepia(.35); } 60% { transform: translateX(4px); filter: brightness(1.35); } }
+    @keyframes impact-flash { 0% { opacity: .85; } 100% { opacity: 0; } }
+    @keyframes map-route-flow { to { stroke-dashoffset: -112; } }
+    @keyframes river-glow { from { opacity: .55; } to { opacity: .95; } }
+    @keyframes map-node-breathe { 0%,100% { box-shadow: 0 2px 8px #06121bbd, inset 0 0 0 3px #ffffff12; } 50% { box-shadow: 0 2px 13px #d3b86e55, inset 0 0 0 3px #ffffff22; } }
+    @keyframes map-node-selected { 0%,100% { box-shadow: 0 0 0 3px #d3b86e22; } 50% { box-shadow: 0 0 0 7px #d3b86e44; } }
+    @media (prefers-reduced-motion: reduce) {
+      .combatant-art, .map-node, .world-map-svg .map-route, .world-map-svg .map-river { animation: none !important; }
+    }
+
+
+    html,body{min-height:100%} body{overflow:hidden}
+    .shell{width:min(1880px,calc(100% - 32px));max-width:1880px;height:100vh;min-height:720px;padding:12px 0;display:flex;flex-direction:column}
+    .masthead{flex:0 0 auto;padding-bottom:10px} .session-panel{flex:0 0 auto;max-height:130px;overflow:auto}
+    #game-view{min-height:0;flex:1 1 auto;display:flex;flex-direction:column} #game-view .intro-row{flex:0 0 auto;padding:8px 0 10px}
+    .game-layout{min-height:0;flex:1 1 auto;grid-template-columns:minmax(0,1fr) 330px;gap:12px;padding-top:0}
+    .main-column{min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.9fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"progress progress" "map scene" "battle battle" "journal journal";gap:10px;align-content:start}
+    .progress-panel{grid-area:progress;padding:10px 14px}.map-panel{grid-area:map;min-height:0;margin:0;display:flex;flex-direction:column}.map-panel .panel-body{min-height:0;display:flex;flex-direction:column}
+    .world-map{height:clamp(320px,40vh,440px);flex:1 1 auto;min-height:320px}.zone-roster{max-height:100px;overflow:auto}.scene{grid-area:scene;min-height:240px;height:100%;margin:0}#battle{grid-area:battle}.story-panel{grid-area:journal;max-height:95px;overflow:hidden}.journal{max-height:55px;overflow:auto}
+    .side-column{max-height:calc(100vh - 145px);overflow:auto;padding-right:3px;display:flex;flex-direction:column;gap:8px}.side-column>.panel{flex:0 0 auto}.side-column .panel-body{padding:9px}.side-column .spell-list{max-height:160px;overflow:auto}
+    .combat-actions,.decision-panel,#map-hunt-button,#auto-hunt,#rest-button,#save-button{display:none!important}
+    .panel,.progress-panel,.story-panel,.scene,.class-card{border-radius:7px}
+    .activation-gate{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 25%,#293c34,#101714 70%)}.activation-gate[hidden]{display:none}
+    .activation-card{width:min(480px,100%);padding:34px;border:1px solid var(--gold);border-radius:10px;background:linear-gradient(145deg,#27352e,#141d1a);box-shadow:0 24px 80px #000b;text-align:center}.activation-card h2{margin:8px 0;font-weight:400;font-size:2rem}.activation-card p{color:var(--muted)}#activation-form{display:flex;gap:8px;margin:20px 0 12px}#activation-input{flex:1;min-width:0;padding:12px;color:var(--paper);border:1px solid #59685d;background:#101614;text-align:center;letter-spacing:.08em}.activation-card small{color:var(--muted)}.activation-error{min-height:20px;color:#e49b7e!important}
+    .loot-notice{animation:loot-arrive .35s ease-out}@keyframes loot-arrive{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .in-combat .scene{filter:saturate(.72) brightness(.72)}.in-combat .map-panel{border-color:#b86f4d;box-shadow:0 0 0 1px #b86f4d55,0 10px 26px #0006}
+    @media(max-width:1100px){body{overflow:auto}.shell{height:auto;min-height:100vh}#game-view{display:block}.game-layout{display:grid;grid-template-columns:1fr}.main-column{display:flex;flex-direction:column}.world-map{height:55vh}.side-column{max-height:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){.shell{width:calc(100% - 18px);padding:8px 0}.side-column{display:flex}#activation-form{flex-direction:column}.world-map{height:360px;min-height:300px}}
+
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="brand"><div class="brand-mark" aria-hidden="true"><span>✦</span></div><div><div class="eyebrow">Crónicas del continente</div><h1>Rutas de Tibia</h1></div></div>
+      <div class="account"><span>Un mundo por descubrir</span><button class="top-button" id="sessions-toggle" type="button" aria-expanded="false">Sesiones guardadas</button><button class="top-button" id="new-adventure" type="button" hidden>Nueva aventura</button></div>
+    </header>
+    <section class="session-panel" id="session-panel" aria-label="Sesiones guardadas" hidden><h3>Perfiles y sesiones guardadas</h3><div class="session-list" id="session-list"></div><div class="session-create" id="session-create" hidden><input id="session-name-input" maxlength="32" placeholder="Nombre de esta sesión" aria-label="Nombre de esta sesión"><button class="button primary" id="save-session" type="button">Guardar perfil</button><button class="button" id="export-profile" type="button">Exportar copia</button><button class="button" id="import-profile-button" type="button">Importar copia</button><input id="import-profile-file" type="file" accept="application/json,.json" hidden></div></section>
+
+    <section id="activation-gate" class="activation-gate" aria-label="Activación del juego"><div class="activation-card"><div class="eyebrow">Crónicas del continente</div><h2>Acceso de aventurero</h2><p>Introduce la clave de activación para abrir tu mundo.</p><form id="activation-form"><input id="activation-input" autocomplete="off" spellcheck="false" placeholder="RUTAS-2026-XXXX-XXXX" aria-label="Código de activación" required><button class="button primary" type="submit">Activar juego</button></form><small>Edición de demostración · Clave incluida en el proyecto.</small><p id="activation-error" class="activation-error" aria-live="polite"></p></div></section>
+    <section class="view" id="class-view" aria-labelledby="class-title">
+      <div class="intro-row"><div><div class="section-kicker">Elige tu vocación</div><h2 id="class-title">Tu leyenda comienza en Rookgaard</h2><p>Prepara tu equipo, sigue las huellas y decide qué peligros afrontar. Cada camino puede cambiar lo que encuentres.</p></div></div>
+      <label class="character-name-form" for="character-name-input">Nombre del personaje <input id="character-name-input" maxlength="24" autocomplete="nickname" placeholder="Aventurero"></label>
+      <div class="class-grid" id="class-grid"></div>
+      <p class="footnote">Inspirado en las vocaciones, criaturas y objetos de Tibia 8.6. La experiencia y el botín están adaptados para esta aventura.</p>
+    </section>
+
+    <section class="view" id="game-view" aria-label="Aventura" hidden>
+      <div class="intro-row"><div><div class="section-kicker" id="chapter-label">Rookgaard · Primeros pasos</div><h2 id="journey-title">La senda comienza</h2><p id="journey-copy">Algo se mueve entre las hierbas altas.</p></div><button class="button quiet" id="change-class" type="button">Cambiar vocación</button></div>
+      <div class="game-layout">
+        <div class="main-column">
+          <section class="progress-panel" aria-label="Progreso del personaje">
+            <div class="progress-top"><div class="identity"><div class="class-badge" id="player-glyph" aria-hidden="true">♜</div><div><div class="identity-name"><h2 id="player-name">Aventurero</h2><button class="rename-character" id="rename-character" type="button">Cambiar nombre</button></div><p id="player-subtitle">Vocación · Rookgaard</p></div></div><div class="level-badge" id="level-label">Nivel 1</div></div>
+            <div class="meters"><div><div class="meter-heading"><span>Salud</span><strong id="hp-label">100 / 100</strong></div><div class="meter" role="progressbar" aria-label="Salud" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="meter-fill" id="hp-bar"></div></div></div><div><div class="meter-heading"><span>Maná</span><strong id="mana-label">0 / 0</strong></div><div class="meter" role="progressbar" aria-label="Maná" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"><div class="meter-fill mana" id="mana-bar"></div></div></div><div><div class="meter-heading"><span>Experiencia</span><strong id="xp-label">0 / 100</strong></div><div class="meter" role="progressbar" aria-label="Experiencia para el siguiente nivel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="meter-fill xp" id="xp-bar"></div></div></div></div>
+          </section>
+          
+          <section class="scene" aria-label="Escenario de aventura"><div class="scene-copy"><div class="section-kicker" id="scene-kicker">Rookgaard</div><h2 id="scene-title">La senda de los aventureros</h2><p id="scene-text">El camino se abre en dos direcciones. Elige cómo quieres avanzar.</p></div></section>
+          <section class="panel map-panel" aria-label="Mapa del mundo">
+            <div class="panel-heading"><h3>Mapa de caza</h3><span>Selecciona una región disponible</span></div>
+            <div class="panel-body">
+              <div class="world-map" id="world-map" aria-label="Mapa de regiones de Tibia">
+                
+                <div class="map-tools" aria-label="Controles del mapa"><button type="button" data-map-zoom="in" aria-label="Acercar mapa">+</button><button type="button" data-map-zoom="out" aria-label="Alejar mapa">−</button><button type="button" data-map-zoom="reset" aria-label="Centrar mapa">Centrar</button></div>
+                <svg class="world-map-svg" viewBox="0 0 1000 560" preserveAspectRatio="none" role="img" aria-label="Mapa de fantasía con islas, costas, montañas, bosque y rutas">
+                  <defs>
+                    <pattern id="map-grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#d7dfbd" stroke-opacity=".14" stroke-width="1" /></pattern>
+                    <linearGradient id="map-land-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a19a70" /><stop offset=".55" stop-color="#817e63" /><stop offset="1" stop-color="#686e60" /></linearGradient>
+                    <pattern id="forest-pattern" width="32" height="28" patternUnits="userSpaceOnUse"><path d="M8 3 2 17h12zM24 13l-6 13h12z" fill="#24453f" stroke="#8eaa86" stroke-width="1" /></pattern>
+                    <pattern id="water-pattern" width="34" height="24" patternUnits="userSpaceOnUse"><path d="M2 7q7-5 14 0t14 0M-8 19q7-5 14 0t14 0t14 0" fill="none" stroke="#79afbd" stroke-opacity=".2" /></pattern>
+                  </defs>
+                  <rect width="1000" height="560" fill="#183746" />
+                  <rect width="1000" height="560" fill="url(#water-pattern)" opacity=".8" />
+                  <rect class="map-grid" width="1000" height="560" />
+                  <path class="map-mainland" d="M157 141 225 94 309 103 381 77 463 91 531 70 616 93 693 82 766 112 824 157 855 218 835 274 861 325 824 368 760 399 699 426 645 468 565 451 501 480 426 454 358 467 298 426 237 397 181 350 151 295 119 242z" />
+                  <path class="map-island" d="M427 42 474 20 526 35 550 67 525 91 468 87 435 68z" />
+                  <path class="map-island" d="M771 424 821 401 878 419 919 458 917 504 879 535 824 520 784 483z" />
+                  <path class="map-island" d="M878 174 923 151 962 176 974 220 947 250 897 238 875 209z" />
+                  <path class="map-biome map-forest" d="m187 143 76-38 87 11 38 53-31 63-104 7-61-35z" />
+                  <path class="map-biome" fill="url(#forest-pattern)" d="m187 143 76-38 87 11 38 53-31 63-104 7-61-35z" />
+                  <path class="map-biome map-mountain" d="m383 177 39-55 28 37 35-68 31 54 40-35 42 69 44-27 42 61-55 29-34-22-45 26-38-31-40 24-37-25-48 21z" />
+                  <path class="map-biome map-swamp" d="m585 312 77-37 95 35-12 69-83 45-82-31z" />
+                  <path class="map-biome map-desert" d="m707 174 73-48 73 38 31 64-46 53-81-19-48-43z" />
+                  <path class="map-river" d="M440 156q-25 46 8 81t-7 58q-38 36 13 62t-1 75" />
+                  <path class="map-river" d="M632 191q34 25 6 55t16 48" />
+                  <path class="map-route" d="M846 470Q783 423 691 367T476 260 333 195 488 57M476 260Q411 316 360 388M691 367Q726 285 754 148M691 367Q620 418 535 452M754 148Q846 153 913 205" />
+                  <text class="map-sea-label" x="65" y="300">MAR DEL NORTE</text>
+                  <text class="map-sea-label" x="675" y="535">BAHÍA DEL ESTE</text>
+                  <text class="map-region" x="215" y="255">Bosques de Carlin</text>
+                  <text class="map-region" x="398" y="333">Montañas de Kazordoon</text>
+                  <text class="map-region" x="708" y="312">Desierto de Darashia</text>
+                  <text class="map-region" x="748" y="325">Tierras áridas</text>
+                  <text class="map-region" x="569" y="417">Pantanos de Venore</text>
+                  <text class="map-label" x="216" y="137">Carlin</text>
+                  <text class="map-label" x="333" y="403">Thais</text>
+                  <text class="map-label" x="457" y="284">Kazordoon</text>
+                  <text class="map-label" x="650" y="393">Venore</text>
+                  <text class="map-label" x="730" y="132">Edron</text>
+                  <text class="map-label" x="846" y="500">Rookgaard</text>
+                  <text class="map-label" x="455" y="62">Demona</text>
+                  <text class="map-label" x="707" y="446">Port Hope</text>
+                  <text class="map-label" x="865" y="207">Darashia</text>
+                  <text class="map-label" x="181" y="366">Liberty Bay</text>
+                  <text class="map-label" x="92" y="65">N</text>
+                  <path d="M92 91v-27m0 0-7 10m7-10 7 10" fill="none" stroke="#f4dda0" stroke-width="2" />
+                </svg>
+                <button class="map-node" type="button" data-zone="meadow" style="left:86.5%;top:83%" aria-label="Pradera de Rookgaard">R</button>
+                <button class="map-node" type="button" data-zone="cave" style="left:93%;top:90%" aria-label="Cueva de los susurros">C</button>
+                <button class="map-node" type="button" data-zone="swamp" style="left:68%;top:65%" aria-label="Pantano de Venore">P</button>
+                <button class="map-node" type="button" data-zone="outpost" style="left:36.5%;top:66%" aria-label="Puesto fronterizo">T</button>
+                <button class="map-node" type="button" data-zone="mountain" style="left:48%;top:46%" aria-label="Paso de la montaña">K</button>
+                <button class="map-node" type="button" data-zone="amazon" style="left:24%;top:28%" aria-label="Campamento Amazona">A</button>
+                <button class="map-node" type="button" data-zone="dragonLair" style="left:74.5%;top:28%" aria-label="Guarida del dragón">D</button>
+                <button class="map-node" type="button" data-zone="demona" style="left:49%;top:10%" aria-label="Demona">X</button>
+              </div><p class="map-help">Arrastra con el cursor para desplazarte · rueda para acercar · doble clic para reiniciar</p>
+              <button class="map-node" type="button" data-zone="libertyBay" style="left:18%;top:67%" aria-label="Costa de Liberty Bay">L</button>
+              <button class="map-node" type="button" data-zone="portHope" style="left:61%;top:78%" aria-label="Selva de Port Hope">H</button>
+              <button class="map-node" type="button" data-zone="darashia" style="left:86%;top:25%" aria-label="Desierto de Darashia">D</button>
+              <div class="map-controls">
+                <div class="map-legend"><span id="map-zone-name">Pradera de Rookgaard</span><strong id="map-zone-level">Nivel 1+</strong></div>
+                <button class="button primary map-hunt" id="map-hunt-button" type="button">Cazar en esta zona</button><button class="button map-hunt" id="auto-hunt" type="button" aria-pressed="false">Auto: desactivado</button>
+                <a class="map-reference" href="https://www.tibiawiki.com.br/wiki/Mapa" target="_blank" rel="noreferrer">Referencia geografica: TibiaWiki</a><a class="map-reference" href="https://tibiopedia.pl/maps/monsters_respawn" target="_blank" rel="noreferrer">Zonas y respawns: Tibiopedia</a>
+              </div>
+              <div class="zone-roster"><div class="zone-roster-heading"><span>Criaturas de la zona</span><span id="zone-monster-count">0 especies</span></div><div class="zone-monsters" id="zone-monsters"></div></div>
+            </div>
+          </section>
+          <section class="decision-panel" id="decision-panel"><p class="decision-title">¿Qué camino tomas?</p><div class="decision-options" id="decision-options"></div></section>
+          <section class="battle" id="battle" aria-label="Encuentro" hidden>
+            <div class="monster-row"><article class="combatant-card"><div class="combatant-art" id="player-image"><img id="player-sprite" alt=""><span class="portrait-fallback" aria-hidden="true">♜</span></div><strong class="combatant-name" id="combat-player-name">Personaje</strong><span class="combatant-level" id="combat-player-level">Nivel 1</span><div class="enemy-health"><span>Salud</span><strong id="combat-player-hp">0 / 0</strong><div class="meter"><div class="meter-fill" id="combat-player-hp-bar"></div></div></div></article><div class="combat-vs" aria-hidden="true">VS</div><article class="combatant-card"><div class="combatant-art" id="monster-image"><img id="monster-sprite" alt=""><span class="portrait-fallback" aria-hidden="true">☠</span></div><strong class="combatant-name" id="monster-name">Criatura</strong><span class="combatant-level" id="monster-note">Acecha en la ruta</span><div class="enemy-health"><span>Salud</span><strong id="monster-hp-label">0 / 0</strong><div class="meter" role="progressbar" aria-label="Vitalidad del enemigo" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"><div class="meter-fill" id="monster-hp-bar"></div></div></div></article></div>
+            <div class="combat-actions"><button class="button primary" data-combat="attack">⚔ Atacar</button><button class="button" data-combat="special" id="special-action">✦ Habilidad</button><button class="button" data-combat="guard">◇ Defender</button></div><p class="battle-message" id="battle-message" aria-live="polite">Elige tu acción.</p>
+          </section>
+          <section class="story-panel" aria-label="Diario de viaje"><div class="panel-heading"><h3>Diario de viaje</h3><span id="journey-count">Jornada 1</span></div><div class="journal" id="journal" role="log" aria-live="polite"><p>Una nueva historia empieza en Rookgaard.</p></div></section>
+        </div>
+        <aside class="side-column" aria-label="Personaje y equipo">
+          <section class="panel"><div class="panel-heading"><h3>Equipo</h3><span id="gear-rating">Defensa 0</span></div><div class="panel-body"><div class="equipment-grid" id="equipment-grid"></div></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Entrenamiento</h3><span id="skill-class-label">Habilidades</span></div><div class="panel-body"><div class="skill-list" id="skill-list"></div><p class="training-note">Los ataques, bloqueos y hechizos entrenan la habilidad correspondiente.</p></div></section>
+          <section class="panel quest-panel"><div class="panel-heading"><h3>Tablón de quests</h3><span>Encargos del continente</span></div><div class="panel-body"><div class="quest-list" id="quest-list"></div></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Hechizos y runas</h3><span id="mana-summary">0 mana</span></div><div class="panel-body"><div class="spell-list" id="spell-list"></div></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Mochila</h3><span id="bag-count">0 / 20</span></div><div class="panel-body"><div class="coin-line"><span>Oro</span><strong id="gold-count">0 gp</strong></div><div class="inventory" id="inventory" aria-label="Casillas de la mochila"></div><div class="item-inspector" id="item-inspector" hidden><div class="selected-item-info"><img id="selected-item-sprite" alt=""><span><strong id="selected-item-name">Objeto</strong><small id="selected-item-count">Cantidad 1</small></span></div><div class="item-actions" id="item-actions"></div><div class="stack-tools" id="stack-tools" hidden><label for="split-amount">Separar</label><input id="split-amount" type="number" min="1" value="1"><button class="button" id="split-stack" type="button">Dividir pila</button></div></div><div class="container-window" id="container-window" hidden><div class="container-heading"><span id="container-title">Backpack · 0 / 20</span><button class="container-close" id="close-container" type="button">Cerrar</button></div><div class="container-grid" id="container-grid"></div><button class="button container-store" id="store-in-container" type="button">Guardar objeto seleccionado</button></div></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Tienda de Venore</h3><span>Compra y vende</span></div><div class="shop-tabs"><button class="button active" type="button" data-shop-mode="buy">Comprar</button><button class="button" type="button" data-shop-mode="sell">Vender</button></div><div class="panel-body"><div class="shop-quantity-row" id="shop-quantity-row"><label for="shop-quantity">Unidades</label><input class="shop-quantity" id="shop-quantity" type="number" min="1" max="100" value="1"></div><div class="shop-list" id="shop-list"></div></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Atributos</h3><span>Derivados del equipo</span></div><div class="panel-body"><div class="stat-line"><div>Ataque<strong id="attack-stat">0</strong></div><div>Defensa<strong id="defense-stat">0</strong></div><div>Monstruos<strong id="kill-stat">0</strong></div><div>Ruta<strong id="step-stat">0</strong></div></div></div></section>
+          <div class="side-actions"><button class="button quiet" id="rest-button" type="button">Descansar</button><button class="button quiet" id="save-button" type="button">Guardar</button></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const classes = {
+        knight: { name: 'Knight', glyph: '♜', sprite: 'Knight.gif', title: 'El muro de acero', description: 'Resiste el frente, domina la espada y protege tu salud.', hp: 150, manaPerLevel: 5, attack: 12, defense: 8, special: 'Golpe poderoso', weapon: 'Sword', outfit: 'Knight Armor', legs: 'Plate Legs', armor: 'Chain Armor', helmet: 'Chain Helmet', boots: 'Leather Boots', skills: ['sword', 'axe', 'club', 'shielding'] },
+        druid: { name: 'Druid', glyph: '❋', sprite: 'Druid.gif', title: 'Guardián de la vida', description: 'Equilibra magia y resistencia; recupera fuerzas en combate.', hp: 100, manaPerLevel: 30, attack: 13, defense: 4, special: 'Curación natural', weapon: 'Snakebite Rod', outfit: 'Druid Outfit', legs: 'Brass Legs', armor: 'Mammoth Fur Cape', helmet: 'Magician Hat', boots: 'Leather Boots', skills: ['magic', 'distance', 'shielding'] },
+        sorcerer: { name: 'Sorcerer', glyph: '✦', sprite: 'Sorcerer.gif', title: 'Tejedor arcano', description: 'Inflige gran daño con magia, aunque su defensa es menor.', hp: 100, manaPerLevel: 30, attack: 16, defense: 3, special: 'Rayo arcano', weapon: 'Wand of Vortex', outfit: 'Mage Outfit', legs: 'Brass Legs', armor: 'Blue Robe', helmet: 'Magician Hat', boots: 'Leather Boots', skills: ['magic', 'distance', 'shielding'] },
+        rogue: { name: 'Paladin', glyph: '➶', sprite: 'Hunter.gif', title: 'Arquero sagrado', description: 'Combina distancia, precisión y magia divina.', hp: 100, manaPerLevel: 15, attack: 14, defense: 4, special: 'Ataque doble', weapon: 'Knife', outfit: 'Hunter Outfit', legs: 'Leather Legs', armor: 'Leather Armor', helmet: 'Leather Helmet', boots: 'Leather Boots', skills: ['distance', 'sword', 'shielding'] }
+      };
+      const slots = ['outfit', 'helmet', 'armor', 'legs', 'boots', 'weapon'];
+      const slotNames = { outfit: 'Ropa', helmet: 'Casco', armor: 'Armadura', legs: 'Piernas', boots: 'Botas', weapon: 'Arma' };
+      const items = {
+        'Sword': { slot: 'weapon', skill: 'sword', attack: 6, defense: 0, value: 25 }, 'Knife': { slot: 'weapon', skill: 'sword', attack: 2, defense: 0, value: 5 }, 'Club': { slot: 'weapon', skill: 'club', attack: 3, defense: 0, value: 5 }, 'Wooden Shield': { slot: 'shield', attack: 0, defense: 2, value: 8 },
+        'Dagger': { slot: 'weapon', skill: 'sword', attack: 4, defense: 0, value: 10 }, 'Short Sword': { slot: 'weapon', skill: 'sword', attack: 5, defense: 0, value: 15 }, 'Rapier': { slot: 'weapon', skill: 'sword', attack: 7, defense: 0, value: 25 }, 'Mace': { slot: 'weapon', skill: 'club', attack: 7, defense: 0, value: 25 }, 'Battle Axe': { slot: 'weapon', skill: 'axe', attack: 10, defense: 0, value: 55 }, 'Longsword': { slot: 'weapon', skill: 'sword', attack: 12, defense: 0, value: 80 },
+        'Leather Armor': { slot: 'armor', attack: 0, defense: 3, value: 12 }, 'Chain Armor': { slot: 'armor', attack: 0, defense: 6, value: 60 }, 'Brass Armor': { slot: 'armor', attack: 0, defense: 8, value: 150 }, 'Plate Armor': { slot: 'armor', attack: 0, defense: 10, value: 400 }, 'Mammoth Fur Cape': { slot: 'armor', attack: 0, defense: 7, value: 110 }, 'Blue Robe': { slot: 'armor', attack: 1, defense: 5, value: 120 },
+        'Leather Helmet': { slot: 'helmet', attack: 0, defense: 2, value: 12 }, 'Chain Helmet': { slot: 'helmet', attack: 0, defense: 4, value: 50 }, 'Brass Helmet': { slot: 'helmet', attack: 0, defense: 5, value: 110 }, 'Magician Hat': { slot: 'helmet', attack: 1, defense: 2, value: 35 },
+        'Leather Legs': { slot: 'legs', attack: 0, defense: 2, value: 10 }, 'Brass Legs': { slot: 'legs', attack: 0, defense: 5, value: 100 }, 'Plate Legs': { slot: 'legs', attack: 0, defense: 7, value: 350 },
+        'Leather Boots': { slot: 'boots', attack: 0, defense: 1, value: 10 }, 'Steel Boots': { slot: 'boots', attack: 0, defense: 4, value: 800 },
+        'Snakebite Rod': { slot: 'weapon', skill: 'magic', attack: 5, defense: 0, value: 20 }, 'Wand of Vortex': { slot: 'weapon', skill: 'magic', attack: 6, defense: 0, value: 25 }, 'Dwarven Shield': { slot: 'shield', attack: 0, defense: 6, value: 100 }, 'Battle Shield': { slot: 'shield', attack: 0, defense: 5, value: 80 }, 'Copper Shield': { slot: 'shield', attack: 0, defense: 3, value: 25 },
+        'Health Potion': { slot: 'consumable', heal: 45, value: 25 }, 'Mana Potion': { slot: 'consumable', mana: 100, value: 50 }, 'Mana Fluid': { slot: 'consumable', mana: 70, value: 55 }, 'Meat': { slot: 'consumable', heal: 12, value: 2 }, 'Ham': { slot: 'consumable', heal: 20, value: 4 }, 'Brown Mushroom': { slot: 'consumable', heal: 8, value: 2 },
+        'Rotworm Fangs': { slot: 'material', attack: 0, defense: 0, value: 8 }, 'Minotaur Leather': { slot: 'material', attack: 0, defense: 0, value: 18 }, 'Orc Tooth': { slot: 'material', attack: 0, defense: 0, value: 10 }, 'Wolf Paw': { slot: 'material', attack: 0, defense: 0, value: 7 }, 'Troll Green': { slot: 'material', attack: 0, defense: 0, value: 6 }, 'Cyclops Toe': { slot: 'material', attack: 0, defense: 0, value: 35 },
+        'Cheese': { slot: 'consumable', heal: 5, value: 1 }, 'Rat Tail': { slot: 'material', attack: 0, defense: 0, value: 1 }, 'Spider Silk': { slot: 'material', attack: 0, defense: 0, value: 6 }, 'Snake Skin': { slot: 'material', attack: 0, defense: 0, value: 4 }, 'Bug Meat': { slot: 'consumable', heal: 6, value: 1 }, 'Bone': { slot: 'material', attack: 0, defense: 0, value: 2 }, 'Swamp Grass': { slot: 'material', attack: 0, defense: 0, value: 4 }, 'Dwarf Beard': { slot: 'material', attack: 0, defense: 0, value: 5 }, 'Orc Leather': { slot: 'material', attack: 0, defense: 0, value: 12 }, 'Throwing Star': { slot: 'weapon', skill: 'distance', attack: 7, defense: 0, value: 20 }, 'Spear': { slot: 'weapon', skill: 'distance', attack: 5, defense: 0, value: 10 }, 'Dark Helmet': { slot: 'helmet', attack: 0, defense: 6, value: 180 },
+        'Knight Armor': { slot: 'armor', attack: 0, defense: 8, value: 250 }, 'Rope': { slot: 'tool', value: 50 }, 'Backpack': { slot: 'container', value: 20 }, 'Amazon Armor': { slot: 'armor', attack: 0, defense: 10, value: 1200 }, 'Viking Helmet': { slot: 'helmet', attack: 0, defense: 5, value: 265 }, 'Knight Legs': { slot: 'legs', attack: 0, defense: 8, value: 500 }, 'Gold Coin': { slot: 'material', value: 1 }, 'Vampire Teeth': { slot: 'material', value: 80 }, 'Black Pearl': { slot: 'material', value: 280 }, 'Behemoth Fang': { slot: 'material', value: 450 }, 'Demon Dust': { slot: 'material', value: 600 }, 'Intense Healing Rune': { slot: 'rune', rune: 'ih', value: 80 }, 'Great Fireball Rune': { slot: 'rune', rune: 'gfb', value: 120 }, 'Sudden Death Rune': { slot: 'rune', rune: 'sd', value: 220 }
+      };
+      const monsters = {
+        rat: { name: 'Rat', sprite: 'Rat.gif', icon: '♟', hp: 20, attack: 4, defense: 0, exp: 5, gold: [0, 2], note: 'Pequeño y escurridizo; una presa habitual para principiantes.', loot: [['Cheese', .18], ['Rat Tail', .12]] },
+        spider: { name: 'Spider', sprite: 'Spider.gif', icon: '♟', hp: 20, attack: 6, defense: 1, exp: 12, gold: [0, 4], note: 'Teje su tela en rincones húmedos y oscuros.', loot: [['Spider Silk', .18], ['Meat', .08]] },
+        snake: { name: 'Snake', sprite: 'Snake.gif', icon: '♟', hp: 15, attack: 5, defense: 0, exp: 10, gold: [0, 3], note: 'Su mordedura es peligrosa si te toma por sorpresa.', loot: [['Snake Skin', .12], ['Meat', .08]] },
+        bug: { name: 'Bug', sprite: 'Bug.gif', icon: '♟', hp: 29, attack: 7, defense: 1, exp: 18, gold: [0, 5], note: 'Un insecto resistente que suele aparecer en cuevas.', loot: [['Bug Meat', .2], ['Brown Mushroom', .08]] },
+        bear: { name: 'Bear', sprite: 'Bear.gif', icon: '♞', hp: 80, attack: 8, defense: 1, exp: 23, gold: [0, 4], note: 'Golpea fuerte pese a ser una criatura de nivel bajo.', loot: [['Meat', .32], ['Ham', .12]] },
+        troll: { name: 'Troll', sprite: 'Troll.gif', icon: '♟', hp: 50, attack: 8, defense: 2, exp: 20, gold: [2, 9], note: 'Una criatura común de los caminos de Rookgaard.', loot: [['Meat', .48], ['Troll Green', .18], ['Wooden Shield', .035], ['Club', .04]] },
+        wolf: { name: 'Wolf', sprite: 'Wolf.gif', icon: '♞', hp: 25, attack: 9, defense: 2, exp: 18, gold: [0, 6], note: 'Rápido y territorial; suele cazar en manada.', loot: [['Meat', .4], ['Wolf Paw', .22], ['Leather Armor', .018]] },
+        caveRat: { name: 'Cave Rat', sprite: 'Cave_Rat.gif', icon: '♟', hp: 15, attack: 5, defense: 1, exp: 10, gold: [0, 4], note: 'Más agresiva que la rata de superficie.', loot: [['Cheese', .14], ['Rat Tail', .2]] },
+        poisonSpider: { name: 'Poison Spider', sprite: 'Poison_Spider.gif', icon: '♟', hp: 26, attack: 9, defense: 1, exp: 22, gold: [0, 6], note: 'Su veneno desgasta a quien no logra detenerla rápido.', loot: [['Spider Silk', .24], ['Meat', .1]] },
+        skeleton: { name: 'Skeleton', sprite: 'Skeleton.gif', icon: '♟', hp: 50, attack: 11, defense: 3, exp: 35, gold: [1, 10], note: 'Un guardián antiguo que aún protege las profundidades.', loot: [['Bone', .36], ['Dagger', .06], ['Copper Shield', .025]] },
+        swampTroll: { name: 'Swamp Troll', sprite: 'Swamp_Troll.gif', icon: '♟', hp: 55, attack: 10, defense: 3, exp: 25, gold: [2, 12], note: 'Se oculta en el fango y protege sus escasos tesoros.', loot: [['Swamp Grass', .25], ['Troll Green', .16], ['Meat', .32]] },
+        rotworm: { name: 'Rotworm', sprite: 'Rotworm.gif', icon: '♟', hp: 65, attack: 10, defense: 3, exp: 40, gold: [4, 18], note: 'Excava bajo tierra y sorprende a viajeros distraídos.', loot: [['Rotworm Fangs', .38], ['Meat', .3], ['Dagger', .035], ['Brass Shield', .015]] },
+        orc: { name: 'Orc', sprite: 'Orc.gif', icon: '♜', hp: 75, attack: 12, defense: 4, exp: 25, gold: [3, 17], note: 'Un guerrero de las tierras salvajes, armado para la emboscada.', loot: [['Orc Tooth', .3], ['Meat', .32], ['Short Sword', .04], ['Copper Shield', .025]] },
+        dwarf: { name: 'Dwarf', sprite: 'Dwarf.gif', icon: '♟', hp: 65, attack: 12, defense: 4, exp: 45, gold: [3, 18], note: 'Un combatiente disciplinado que custodia las minas.', loot: [['Dwarf Beard', .2], ['Mace', .05], ['Brass Helmet', .025]] },
+        orcSpearman: { name: 'Orc Spearman', sprite: 'Orc_Spearman.gif', icon: '♜', hp: 105, attack: 17, defense: 5, exp: 38, gold: [4, 22], note: 'Ataca desde lejos con una lanza y evita el cuerpo a cuerpo.', loot: [['Orc Tooth', .3], ['Spear', .08], ['Orc Leather', .03]] },
+        minotaur: { name: 'Minotaur', sprite: 'Minotaur.gif', icon: '♜', hp: 95, attack: 15, defense: 5, exp: 50, gold: [5, 28], note: 'Su hacha golpea con fuerza. Conviene medir el riesgo.', loot: [['Minotaur Leather', .2], ['Mace', .07], ['Chain Armor', .025], ['Battle Shield', .035]] },
+        cyclops: { name: 'Cyclops', sprite: 'Cyclops.gif', icon: '♟', hp: 180, attack: 24, defense: 8, exp: 150, gold: [18, 75], minLevel: 7, note: 'Un gigante peligroso; guarda botín de mayor valor.', loot: [['Cyclops Toe', .23], ['Battle Axe', .06], ['Plate Shield', .025], ['Brass Armor', .025]] },
+        dwarfGuard: { name: 'Dwarf Guard', sprite: 'Dwarf_Guard.gif', icon: '♟', hp: 90, attack: 18, defense: 6, exp: 55, gold: [8, 24], minLevel: 7, note: 'Un guardia acorazado; mejor preparado que un minero común.', loot: [['Dwarf Beard', .25], ['Dark Helmet', .035], ['Battle Shield', .025]] },
+        giantSpider: { name: 'Giant Spider', sprite: 'Giant_Spider.gif', icon: '♟', hp: 130, attack: 24, defense: 5, exp: 150, gold: [10, 55], minLevel: 8, note: 'Una cazadora veloz de las regiones más peligrosas.', loot: [['Spider Silk', .45], ['Steel Boots', .008], ['Plate Armor', .012]] },
+        dragon: { name: 'Dragon', sprite: 'Dragon.gif', icon: '♜', hp: 420, attack: 42, defense: 14, exp: 700, gold: [100, 400], minLevel: 14, note: 'La prueba final: fuego, escamas y una recompensa excepcional.', loot: [['Dragon Ham', .8], ['Dragon Shield', .04], ['Plate Armor', .05], ['Fire Sword', .035]] },
+        amazon: { name: 'Amazon', sprite: 'Amazon.gif', icon: '♜', hp: 110, attack: 16, defense: 4, exp: 60, gold: [30, 120], minLevel: 8, note: 'Una arquera de las tribus del bosque; protege sus campamentos.', loot: [['Amazon Armor', .012], ['Throwing Star', .12], ['Gold Coin', .35]] },
+        valkyrie: { name: 'Valkyrie', sprite: 'Valkyrie.gif', icon: '♜', hp: 190, attack: 22, defense: 6, exp: 85, gold: [40, 170], minLevel: 10, note: 'Guerrera veloz de las colinas del norte.', loot: [['Viking Helmet', .025], ['Spear', .22], ['Gold Coin', .4]] },
+        orcWarlord: { name: 'Orc Warlord', sprite: 'Orc_Warlord.gif', icon: '♜', hp: 950, attack: 34, defense: 10, exp: 950, gold: [60, 260], minLevel: 18, note: 'Un jefe orco veterano, rodeado por los mejores guerreros.', loot: [['Orc Leather', .45], ['Battle Axe', .06], ['Knight Armor', .018]] },
+        hero: { name: 'Hero', sprite: 'Hero.gif', icon: '♜', hp: 1400, attack: 42, defense: 12, exp: 1200, gold: [120, 450], minLevel: 20, note: 'Un campeón caído que aún blande su espada con maestría.', loot: [['Knight Legs', .025], ['Fire Sword', .012], ['Gold Coin', .65]] },
+        vampire: { name: 'Vampire', sprite: 'Vampire.gif', icon: '♟', hp: 475, attack: 34, defense: 9, exp: 305, gold: [60, 240], minLevel: 18, note: 'Acecha en criptas antiguas y recupera fuerzas al atacar.', loot: [['Vampire Teeth', .3], ['Gold Coin', .55], ['Plate Armor', .01]] },
+        necromancer: { name: 'Necromancer', sprite: 'Necromancer.gif', icon: '♟', hp: 580, attack: 38, defense: 7, exp: 580, gold: [80, 320], minLevel: 20, note: 'Un hechicero oscuro que invoca guardianes del más allá.', loot: [['Black Pearl', .1], ['Wand of Vortex', .03], ['Gold Coin', .5]] },
+        dragonLord: { name: 'Dragon Lord', sprite: 'Dragon_Lord.gif', icon: '♜', hp: 1900, attack: 66, defense: 16, exp: 2100, gold: [200, 900], minLevel: 28, note: 'Una variante más antigua y temible de dragón.', loot: [['Dragon Ham', .85], ['Dragon Shield', .08], ['Fire Sword', .045]] },
+        witch: { name: 'Witch', sprite: 'Witch.gif', icon: '♟', hp: 180, attack: 25, defense: 5, exp: 120, gold: [10, 45], minLevel: 8, note: 'Una hechicera solitaria de los bosques del norte.', loot: [['Black Pearl', .025], ['Wand of Vortex', .01], ['Gold Coin', .25]] },
+        warlock: { name: 'Warlock', sprite: 'Warlock.gif', icon: '♟', hp: 950, attack: 58, defense: 12, exp: 4000, gold: [220, 1000], minLevel: 34, note: 'Maestro de las artes oscuras y uno de los cazadores más peligrosos.', loot: [['Black Pearl', .15], ['Wand of Vortex', .04], ['Gold Coin', .7]] },
+        behemoth: { name: 'Behemoth', sprite: 'Behemoth.gif', icon: '♟', hp: 2650, attack: 75, defense: 25, exp: 2500, gold: [180, 850], minLevel: 32, note: 'Una bestia colosal que domina las cavernas profundas.', loot: [['Behemoth Fang', .25], ['Knight Legs', .025], ['Gold Coin', .7]] },
+        demon: { name: 'Demon', sprite: 'Demon.gif', icon: '♟', hp: 8200, attack: 100, defense: 45, exp: 6000, gold: [500, 3000], minLevel: 45, note: 'Un enemigo legendario; solo los aventureros experimentados deberían enfrentarlo.', loot: [['Demon Dust', .2], ['Fire Sword', .08], ['Dragon Shield', .06]] }
+      };
+      items['Brass Shield'] = { slot: 'shield', attack: 0, defense: 4, value: 35 };
+      items['Plate Shield'] = { slot: 'shield', attack: 0, defense: 7, value: 300 };
+      items['Dragon Ham'] = { slot: 'consumable', heal: 70, value: 30 };
+      items['Dragon Shield'] = { slot: 'shield', attack: 0, defense: 9, value: 700 };
+      items['Fire Sword'] = { slot: 'weapon', skill: 'sword', attack: 18, defense: 0, value: 1000 };
+      items['Knight Armor'] = { slot: 'armor', attack: 0, defense: 8, value: 250 };
+      items['Amazon Armor'] = { slot: 'armor', attack: 0, defense: 10, value: 1200 };
+      items['Viking Helmet'] = { slot: 'helmet', attack: 0, defense: 5, value: 265 };
+      items['Knight Legs'] = { slot: 'legs', attack: 0, defense: 8, value: 500 };
+      items['Rope'] = { slot: 'tool', value: 50 };
+      items['Backpack'] = { slot: 'container', value: 20 };
+      items['Mana Fluid'] = { slot: 'consumable', heal: 20, value: 55 };
+      items['Gold Coin'] = { slot: 'material', value: 1 };
+      items['Vampire Teeth'] = { slot: 'material', value: 80 };
+      items['Black Pearl'] = { slot: 'material', value: 280 };
+      items['Behemoth Fang'] = { slot: 'material', value: 450 };
+      items['Demon Dust'] = { slot: 'material', value: 600 };
+      const stackableItems = new Set(['Health Potion', 'Mana Potion', 'Mana Fluid', 'Meat', 'Ham', 'Dragon Ham', 'Brown Mushroom', 'Cheese', 'Bug Meat', 'Rotworm Fangs', 'Minotaur Leather', 'Orc Tooth', 'Wolf Paw', 'Troll Green', 'Cyclops Toe', 'Rat Tail', 'Spider Silk', 'Snake Skin', 'Bone', 'Swamp Grass', 'Dwarf Beard', 'Orc Leather', 'Throwing Star', 'Spear', 'Gold Coin', 'Vampire Teeth', 'Black Pearl', 'Behemoth Fang', 'Demon Dust', 'Intense Healing Rune', 'Great Fireball Rune', 'Sudden Death Rune']);
+      const shopItems = ['Health Potion', 'Mana Potion', 'Mana Fluid', 'Intense Healing Rune', 'Great Fireball Rune', 'Sudden Death Rune', 'Meat', 'Sword', 'Dagger', 'Wooden Shield', 'Leather Armor', 'Chain Armor', 'Brass Helmet', 'Throwing Star', 'Spear', 'Backpack'];
+      // Hechizos orientativos de Tibia actual. El simulador aplica una cadencia de 2 s.
+      const spells = [
+        {id:'exura',name:'Exura',vocations:['knight','druid','sorcerer','rogue'],level:8,mana:20,cooldown:2,kind:'heal',power:30,description:'Curación básica'},
+        {id:'exura-ico',name:'Exura Ico',vocations:['knight'],level:8,mana:40,cooldown:2,kind:'heal',power:48,description:'Wound Cleansing'},
+        {id:'exori-ico',name:'Exori Ico',vocations:['knight'],level:16,mana:30,cooldown:2,kind:'damage',power:1.65,description:'Brutal Strike'},
+        {id:'exori-hur',name:'Exori Hur',vocations:['knight'],level:28,mana:40,cooldown:2,kind:'damage',power:1.95,description:'Whirlwind Throw'},
+        {id:'exori-mas',name:'Exori Mas',vocations:['knight'],level:33,mana:160,cooldown:2,kind:'damage',power:2.35,description:'Groundshaker'},
+        {id:'exori',name:'Exori',vocations:['knight'],level:35,mana:115,cooldown:2,kind:'damage',power:2.55,description:'Berserk'},
+        {id:'exura-gran-ico',name:'Exura Gran Ico',vocations:['knight'],level:80,mana:200,cooldown:2,kind:'heal',power:115,description:'Intense Wound Cleansing'},
+        {id:'exori-gran',name:'Exori Gran',vocations:['knight'],level:90,mana:340,cooldown:2,kind:'damage',power:3.35,description:'Fierce Berserk'},
+        {id:'exori-flam',name:'Exori Flam',vocations:['druid','sorcerer'],level:12,mana:20,cooldown:2,kind:'damage',power:1.75,description:'Flame Strike'},
+        {id:'exori-tera',name:'Exori Tera',vocations:['druid'],level:13,mana:20,cooldown:2,kind:'damage',power:1.8,description:'Terra Strike'},
+        {id:'exori-vis',name:'Exori Vis',vocations:['sorcerer'],level:12,mana:20,cooldown:2,kind:'damage',power:1.85,description:'Energy Strike'},
+        {id:'exori-frigo',name:'Exori Frigo',vocations:['druid'],level:15,mana:20,cooldown:2,kind:'damage',power:1.9,description:'Ice Strike'},
+        {id:'exevo-flam-hur',name:'Exevo Flam Hur',vocations:['sorcerer'],level:18,mana:25,cooldown:2,kind:'damage',power:2.2,description:'Fire Wave'},
+        {id:'exevo-gran-flam-hur',name:'Exevo Gran Flam Hur',vocations:['sorcerer'],level:38,mana:120,cooldown:2,kind:'damage',power:3.1,description:'Great Fire Wave'},
+        {id:'exevo-gran-mas-tera',name:'Exevo Gran Mas Tera',vocations:['druid'],level:55,mana:700,cooldown:2,kind:'damage',power:3.7,description:'Wrath of Nature'},
+        {id:'exura-gran',name:'Exura Gran',vocations:['druid','sorcerer'],level:13,mana:70,cooldown:2,kind:'heal',power:78,description:'Curación intensa'},
+        {id:'exori-con',name:'Exori Con',vocations:['rogue'],level:23,mana:25,cooldown:2,kind:'damage',power:1.8,description:'Ethereal Spear'},
+        {id:'exori-san',name:'Exori San',vocations:['rogue'],level:50,mana:160,cooldown:2,kind:'damage',power:2.7,description:'Divine Caldera'},
+        {id:'exori-gran-con',name:'Exori Gran Con',vocations:['rogue'],level:90,mana:105,cooldown:2,kind:'damage',power:3.2,description:'Strong Ethereal Spear'},
+        {id:'ih',name:'Intense Healing Rune',vocations:['knight','druid','sorcerer','rogue'],level:15,mana:60,cooldown:2,kind:'rune-heal',item:'Intense Healing Rune',power:82,description:'Runa de curación'},
+        {id:'gfb',name:'Great Fireball Rune',vocations:['knight','druid','sorcerer','rogue'],level:30,mana:60,cooldown:2,kind:'rune-damage',item:'Great Fireball Rune',power:2.4,description:'Runa de fuego en área'},
+        {id:'sd',name:'Sudden Death Rune',vocations:['knight','druid','sorcerer','rogue'],level:45,mana:80,cooldown:2,kind:'rune-damage',item:'Sudden Death Rune',power:3.2,description:'Runa de daño elevado'}
+      ];
+      const routes = {
+        meadow: { name: 'Pradera de Rookgaard', chapter: 'Rookgaard · Sendero verde', minLevel: 1, encounters: [['rat', 26], ['spider', 16], ['snake', 13], ['wolf', 12], ['troll', 13], ['bear', 8], ['bug', 12]], text: 'Hierba húmeda, huellas frescas y una vieja senda hacia el norte.', choices: [{ id: 'meadow', title: 'Seguir las huellas', detail: 'Riesgo bajo · botín modesto' }, { id: 'cave', title: 'Bajar a la cueva', detail: 'Riesgo medio · más experiencia' }, { id: 'swamp', title: 'Rodear el pantano', detail: 'Riesgo medio · materiales raros' }] },
+        cave: { name: 'Cueva de los susurros', chapter: 'Rookgaard · Bajo tierra', minLevel: 2, encounters: [['caveRat', 18], ['spider', 15], ['bug', 17], ['rotworm', 22], ['poisonSpider', 12], ['skeleton', 10], ['minotaur', 6]], text: 'El aire se vuelve frío. Algo se arrastra entre las piedras.', choices: [{ id: 'cave', title: 'Adentrarte más', detail: 'Riesgo medio · buen botín' }, { id: 'outpost', title: 'Buscar una salida', detail: 'Riesgo alto · tierras salvajes' }, { id: 'meadow', title: 'Volver al sendero', detail: 'Riesgo bajo · presas pequeñas' }] },
+        swamp: { name: 'Pantano de Venore', chapter: 'Venore · Tierras húmedas', minLevel: 3, encounters: [['snake', 18], ['poisonSpider', 24], ['swampTroll', 23], ['rotworm', 15], ['bug', 20]], text: 'El agua turbia apenas deja ver las huellas que se hunden en el fango.', choices: [{ id: 'swamp', title: 'Cruzar el pantano', detail: 'Riesgo medio · materiales útiles' }, { id: 'cave', title: 'Buscar terreno firme', detail: 'Riesgo medio · entrar a la cueva' }, { id: 'outpost', title: 'Seguir hacia el puesto', detail: 'Riesgo alto · equipo y oro' }] },
+        outpost: { name: 'Afueras de Thais', chapter: 'Thais · Llanuras y cuevas', minLevel: 4, encounters: [['orc', 24], ['orcSpearman', 12], ['troll', 20], ['rotworm', 18], ['minotaur', 20], ['cyclops', 6]], text: 'La empalizada está rota. Desde el bosque llega un ruido pesado.', choices: [{ id: 'outpost', title: 'Explorar el puesto', detail: 'Riesgo alto · equipo útil' }, { id: 'meadow', title: 'Regresar al sendero', detail: 'Riesgo bajo · recuperar aliento' }, { id: 'mountain', title: 'Subir al paso', detail: 'Riesgo extremo · gran recompensa' }] },
+        mountain: { name: 'Paso de la montaña', chapter: 'Tierra salvaje · Montaña', minLevel: 7, encounters: [['minotaur', 20], ['dwarfGuard', 24], ['cyclops', 34], ['giantSpider', 20], ['dragon', 2]], text: 'El viento trae ceniza desde una abertura oscura en la montaña.', choices: [{ id: 'mountain', title: 'Subir al paso', detail: 'Riesgo alto · experiencia abundante' }, { id: 'amazon', title: 'Explorar el bosque', detail: 'Riesgo alto · equipo raro' }, { id: 'dragonLair', title: 'Entrar a la guarida', detail: 'Riesgo extremo · nivel 15+' }] },
+        amazon: { name: 'Bosques de Carlin', chapter: 'Carlin · Campamentos amazónicos', minLevel: 8, encounters: [['amazon', 42], ['valkyrie', 28], ['wolf', 16], ['orcWarlord', 5], ['witch', 9]], text: 'Entre los árboles se ocultan arqueras y guerreras del norte.', choices: [{ id: 'amazon', title: 'Rastrear el campamento', detail: 'Riesgo alto · equipo poco común' }, { id: 'mountain', title: 'Volver al paso', detail: 'Riesgo medio · seguir al sur' }, { id: 'dragonLair', title: 'Cruzar hacia el volcán', detail: 'Riesgo extremo · nivel 15+' }] },
+        dragonLair: { name: 'Tierras de Edron', chapter: 'Edron · Guaridas y ruinas', minLevel: 15, encounters: [['dragon', 34], ['dragonLord', 12], ['hero', 10], ['vampire', 16], ['necromancer', 18], ['warlock', 10]], text: 'El calor de las cavernas anuncia criaturas que protegen tesoros antiguos.', choices: [{ id: 'dragonLair', title: 'Avanzar a la guarida', detail: 'Riesgo muy alto · gran experiencia' }, { id: 'demona', title: 'Descender a Demona', detail: 'Riesgo extremo · nivel 35+' }, { id: 'amazon', title: 'Regresar al bosque', detail: 'Riesgo alto · zona conocida' }] },
+        demona: { name: 'Demona', chapter: 'Edron · Ruinas subterráneas', minLevel: 35, encounters: [['warlock', 34], ['behemoth', 28], ['demon', 12], ['dragonLord', 10], ['necromancer', 16]], text: 'En las ruinas de Demona, cada pasillo esconde magia y fuerza letales.', choices: [{ id: 'demona', title: 'Explorar las ruinas', detail: 'Riesgo máximo · nivel 35+' }, { id: 'dragonLair', title: 'Volver a la guarida', detail: 'Riesgo alto · criaturas conocidas' }] }
+      };
+      routes.libertyBay = { name: 'Costa de Liberty Bay', chapter: 'Liberty Bay · Costa tropical', minLevel: 10, encounters: [['amazon', 28], ['giantSpider', 24], ['orc', 20], ['vampire', 8], ['swampTroll', 20]], text: 'Las plantaciones y cavernas de Liberty Bay esconden criaturas de las islas.', choices: [{ id: 'libertyBay', title: 'Explorar la costa', detail: 'Riesgo alto · botín tropical' }, { id: 'portHope', title: 'Navegar hacia Port Hope', detail: 'Riesgo alto · selva profunda' }, { id: 'amazon', title: 'Volver al norte', detail: 'Riesgo medio · regresar al bosque' }] };
+      routes.portHope = { name: 'Selva de Port Hope', chapter: 'Port Hope · Selva y pantano', minLevel: 12, encounters: [['giantSpider', 25], ['swampTroll', 20], ['amazon', 15], ['dragon', 4], ['vampire', 10], ['orcWarlord', 6]], text: 'La selva es densa, húmeda y llena de senderos que desaparecen bajo las hojas.', choices: [{ id: 'portHope', title: 'Adentrarte en la selva', detail: 'Riesgo muy alto · criaturas raras' }, { id: 'libertyBay', title: 'Volver a la costa', detail: 'Riesgo alto · recuperar provisiones' }, { id: 'dragonLair', title: 'Buscar un volcán', detail: 'Riesgo extremo · nivel 15+' }] };
+      routes.darashia = { name: 'Desierto de Darashia', chapter: 'Darashia · Dunas del este', minLevel: 18, encounters: [['cyclops', 22], ['vampire', 16], ['necromancer', 12], ['dragon', 5], ['hero', 15], ['orcWarlord', 20]], text: 'El desierto abre sus ruinas al viajero, pero sus tumbas no están vacías.', choices: [{ id: 'darashia', title: 'Cruzar las dunas', detail: 'Riesgo muy alto · reliquias antiguas' }, { id: 'dragonLair', title: 'Regresar a Edron', detail: 'Riesgo alto · zona conocida' }, { id: 'demona', title: 'Descender a las ruinas', detail: 'Riesgo extremo · nivel 35+' }] };
+      const vocationHunts = { knight: ['meadow', 'outpost', 'mountain', 'darashia'], druid: ['meadow', 'swamp', 'portHope', 'dragonLair'], sorcerer: ['cave', 'amazon', 'demona', 'darashia'], rogue: ['meadow', 'amazon', 'libertyBay', 'portHope'] };
+      const ui = Object.fromEntries(['class-view', 'game-view', 'class-grid', 'new-adventure', 'change-class', 'player-glyph', 'player-name', 'player-subtitle', 'level-label', 'hp-label', 'hp-bar', 'xp-label', 'xp-bar', 'chapter-label', 'journey-title', 'journey-copy', 'scene-kicker', 'scene-title', 'scene-text', 'decision-options', 'decision-panel', 'battle', 'monster-image', 'monster-sprite', 'monster-name', 'monster-note', 'monster-hp-label', 'monster-hp-bar', 'battle-message', 'special-action', 'equipment-grid', 'inventory', 'bag-count', 'gold-count', 'gear-rating', 'attack-stat', 'defense-stat', 'kill-stat', 'step-stat', 'journey-count', 'journal', 'rest-button', 'save-button', 'toast', 'world-map', 'map-zone-name', 'map-zone-level', 'map-hunt-button', 'skill-class-label', 'skill-list', 'player-image', 'player-sprite', 'combat-player-name', 'combat-player-level', 'combat-player-hp', 'combat-player-hp-bar', 'item-inspector', 'selected-item-sprite', 'selected-item-name', 'selected-item-count', 'item-actions', 'stack-tools', 'split-amount', 'split-stack', 'shop-list', 'shop-quantity-row', 'shop-quantity', 'zone-monsters', 'zone-monster-count', 'mana-label', 'mana-bar', 'mana-summary', 'spell-list', 'auto-hunt', 'sessions-toggle', 'session-panel', 'session-list', 'session-create', 'session-name-input', 'save-session', 'export-profile', 'import-profile-button', 'import-profile-file'].map(id => [id, document.getElementById(id)]));
+      ui['rename-character'] = document.getElementById('rename-character'); ui['character-name-input'] = document.getElementById('character-name-input'); ui['container-window'] = document.getElementById('container-window'); ui['container-title'] = document.getElementById('container-title'); ui['container-grid'] = document.getElementById('container-grid'); ui['close-container'] = document.getElementById('close-container'); ui['store-in-container'] = document.getElementById('store-in-container'); ui['quest-list'] = document.getElementById('quest-list');
+      let state = null, enemy = null, guarding = false, busy = false, toastTimer, autoTimer, shopMode = 'buy';
+      const maxBagSlots = 20;
+      const maxContainerSlots = 20;
+      const quests = [
+        { id: 'rookgaard-rats', title: 'Plaga en el sendero', description: 'Derrota criaturas en la Pradera de Rookgaard.', route: 'meadow', target: 3, level: 1, xp: 60, gold: 30 },
+        { id: 'cave-survey', title: 'Ecos bajo tierra', description: 'Caza en la Cueva de los susurros.', route: 'cave', target: 5, level: 2, xp: 180, gold: 90 },
+        { id: 'venore-watch', title: 'Vigilia del pantano', description: 'Ayuda a despejar los pantanos de Venore.', route: 'swamp', target: 5, level: 5, xp: 320, gold: 150 },
+        { id: 'port-hope-expedition', title: 'Expedición selvática', description: 'Sobrevive a una expedición en Port Hope.', route: 'portHope', target: 6, level: 12, xp: 1100, gold: 450 }
+      ];
+      let mapDrag = null, mapX = 0, mapY = 0, mapScale = 1;
+      const maxLevel = 9999;
+      const xpAt = level => level < 2 ? 0 : Math.floor(50 / 3 * (level ** 3 - 6 * level ** 2 + 17 * level - 12));
+      const skillNames = { sword: 'Sword Fighting', axe: 'Axe Fighting', club: 'Club Fighting', distance: 'Distance Fighting', shielding: 'Shielding', magic: 'Magic Level' };
+      const skillRequirement = (skill, level) => Math.floor((skill === 'magic' ? 18 : 14) + level * (skill === 'magic' ? 4 : 3));
+      const initialSkills = classId => Object.fromEntries(Object.keys(skillNames).map(skill => [skill, skill === 'magic' ? (classId === 'druid' || classId === 'sorcerer' ? 2 : 0) : 10]));
+      const equipmentValue = item => item && items[item] ? items[item].defense || 0 : 0;
+      const gearDefense = () => slots.reduce((sum, slot) => sum + equipmentValue(state.equipment[slot]), 0) + equipmentValue(state.equipment.shield);
+      const gearAttack = () => slots.reduce((sum, slot) => sum + (state.equipment[slot] && items[state.equipment[slot]] ? items[state.equipment[slot]].attack || 0 : 0), 0);
+      const maxHp = () => state.baseHp + (state.level - 1) * (state.classId === 'knight' ? 15 : state.classId === 'rogue' ? 10 : 5) + gearDefense() * 2;
+      const maxMana = () => state.baseMana + (state.level - 1) * classes[state.classId].manaPerLevel;
+      function toast(message) { ui.toast.textContent = message; ui.toast.classList.add('show'); window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => ui.toast.classList.remove('show'), 2200); }
+      function addLog(message) { const entry = document.createElement('p'); entry.textContent = message; ui.journal.append(entry); ui.journal.scrollTop = ui.journal.scrollHeight; }
+      function itemName(stack) { return !stack ? '' : typeof stack === 'string' ? stack : stack.name; }
+      function itemCount(stack) { return !stack ? 0 : typeof stack === 'string' ? 1 : stack.count || 1; }
+
+      function spriteUrl(filename, legacy = false) {
+        const host = legacy ? 'https://www.tibiawiki.com.br/wiki/Special:FilePath/' : 'https://tibia.fandom.com/wiki/Special:FilePath/';
+        return `${host}${encodeURIComponent(filename)}`;
+      }
+      function bindSprite(image, wrapper, filename, alt = '') {
+        if (!image || !wrapper || !filename) return;
+        image.alt = alt;
+        image.dataset.spriteName = filename;
+        image.dataset.spriteFallback = '0';
+        wrapper.classList.remove('broken');
+        image.onerror = () => {
+          if (image.dataset.spriteFallback !== '1') {
+            image.dataset.spriteFallback = '1';
+            image.src = spriteUrl(filename, true);
+          } else {
+            wrapper.classList.add('broken');
+            image.removeAttribute('src');
+          }
+        };
+        image.onload = () => wrapper.classList.remove('broken');
+        image.src = spriteUrl(filename);
+      }
+      function animateCombatant(id, stateClass) {
+        const target = ui[id];
+        if (!target) return;
+        target.classList.remove('is-attacking', 'is-hit');
+        void target.offsetWidth;
+        target.classList.add(stateClass);
+        window.setTimeout(() => target.classList.remove(stateClass), 460);
+      }
+
+      function itemSprite(name) { return spriteUrl(items[name]?.sprite || `${name.replaceAll(' ', '_')}.gif`); }
+      function addItem(name, quantity = 1) {
+        if (!items[name]) return false;
+        let remaining = quantity;
+        if (stackableItems.has(name)) {
+          state.inventory.forEach(stack => {
+            if (!stack) return;
+            if (itemName(stack) !== name || itemCount(stack) >= 100 || remaining <= 0) return;
+            const added = Math.min(100 - itemCount(stack), remaining); stack.count = itemCount(stack) + added; remaining -= added;
+          });
+        }
+        while (remaining > 0 && state.inventory.some(stack => !stack)) {
+          const count = stackableItems.has(name) ? Math.min(100, remaining) : 1;
+          const slot = state.inventory.findIndex(stack => !stack); state.inventory[slot] = items[name].slot === 'container' ? { name, count, contents: [] } : { name, count }; remaining -= count;
+        }
+        if (remaining > 0) toast('La mochila está llena; parte del botín quedó atrás.');
+        return remaining === 0;
+      }
+      function showClasses() {
+        ui['class-view'].hidden = false; ui['game-view'].hidden = true; ui['new-adventure'].hidden = !state;
+      }
+      function makeClassCards() {
+        ui['class-grid'].replaceChildren();
+        Object.entries(classes).forEach(([id, character]) => {
+          const button = document.createElement('button'); button.className = 'class-card'; button.type = 'button';
+          const routeNames = vocationHunts[id].map(routeId => `${routes[routeId].name} (Nv. ${routes[routeId].minLevel}+)`).join(' → ');
+          button.innerHTML = `<span class="class-art"><span class="glyph" aria-hidden="true">${character.glyph}</span><img class="vocation-sprite" src="${spriteUrl(character.sprite)}" alt="${character.name} de Tibia"></span><span class="class-copy"><h3>${character.name}</h3><p>${character.description}</p><span class="class-stats"><span>Salud <b>${character.hp}</b></span><span>Ataque <b>${character.attack}</b></span><span>Defensa <b>${character.defense}</b></span></span><span class="vocation-map"><svg viewBox="0 0 180 32" aria-hidden="true"><path d="M10 24 Q50 2 88 17 T170 8" /><circle cx="10" cy="24" r="5" /><circle cx="88" cy="17" r="5" /><circle cx="170" cy="8" r="5" /></svg>${routeNames}</span></span>`;
+          const sprite = button.querySelector('.vocation-sprite'); sprite.addEventListener('load', () => button.classList.add('has-art')); sprite.addEventListener('error', () => { if (sprite.dataset.fallbackTried !== '1') { sprite.dataset.fallbackTried = '1'; sprite.src = spriteUrl(character.sprite, true); } else sprite.remove(); });
+          button.addEventListener('click', () => startAdventure(id)); ui['class-grid'].append(button);
+        });
+      }
+      function startAdventure(classId) {
+        const character = classes[classId];
+        const enteredName = ui['character-name-input'].value.trim();
+        const name = enteredName ? enteredName.slice(0, 24) : `Aventurero ${character.name}`;
+        state = { classId, name, level: 1, xp: 0, hp: character.hp, baseHp: character.hp, mana: 35, baseMana: 35, gold: 25, inventory: [{ name: 'Health Potion', count: 4 }, { name: 'Meat', count: 5 }, ...Array(maxBagSlots - 2).fill(null)], questProgress: {}, acceptedQuests: [], claimedQuests: [], equipment: { outfit: character.outfit, helmet: character.helmet, armor: character.armor, legs: character.legs, boots: character.boots, weapon: character.weapon, shield: classId === 'knight' ? 'Wooden Shield' : '' }, containers: {}, openContainerIndex: -1, skills: initialSkills(classId), skillProgress: Object.fromEntries(Object.keys(skillNames).map(skill => [skill, 0])), cooldowns: {}, autoHunt: true, autoKills: 0, route: 'meadow', steps: 0, kills: 0, specialCooldown: 0, lastMonster: '', selectedItemIndex: -1, log: ['Llegas a Rookgaard con lo puesto y una bolsa ligera.'] };
+        enemy = null; guarding = false; ui.journal.replaceChildren(); addLog(state.log[0]); ui['class-view'].hidden = true; ui['game-view'].hidden = false; ui['new-adventure'].hidden = false; ui['session-create'].hidden = false; render(); window.setTimeout(autoHuntStep, 650);
+      }
+      function renderProgress() {
+        const character = classes[state.classId], hpMax = maxHp(), manaMax = maxMana(), total = state.xp, currentStart = xpAt(state.level), next = state.level < maxLevel ? xpAt(state.level + 1) : currentStart, progress = state.level < maxLevel ? Math.max(0, total - currentStart) : 0, needed = state.level < maxLevel ? next - currentStart : 0;
+        state.hp = Math.min(state.hp, hpMax);
+        ui['player-glyph'].textContent = character.glyph; ui['player-name'].textContent = state.name; ui['player-subtitle'].textContent = `${character.name} · ${routes[state.route].name}`; ui['level-label'].textContent = `Nivel ${state.level}${state.level === maxLevel ? ' · MAX' : ''}`;
+        ui['hp-label'].textContent = `${state.hp} / ${hpMax}`; ui['hp-bar'].style.width = `${state.hp / hpMax * 100}%`; ui['hp-bar'].parentElement.setAttribute('aria-valuemax', hpMax); ui['hp-bar'].parentElement.setAttribute('aria-valuenow', state.hp);
+        state.mana = Math.min(state.mana, manaMax); ui['mana-label'].textContent = `${state.mana} / ${manaMax}`; ui['mana-bar'].style.width = `${manaMax ? state.mana / manaMax * 100 : 0}%`; ui['mana-bar'].parentElement.setAttribute('aria-valuemax', manaMax || 1); ui['mana-bar'].parentElement.setAttribute('aria-valuenow', state.mana); ui['mana-summary'].textContent = `${state.mana} mana`;
+        ui['xp-label'].textContent = state.level === maxLevel ? 'Nivel máximo' : `${progress} / ${needed} XP`; ui['xp-bar'].style.width = `${state.level === maxLevel ? 100 : Math.min(100, progress / needed * 100)}%`; ui['xp-bar'].parentElement.setAttribute('aria-valuemax', needed || 1); ui['xp-bar'].parentElement.setAttribute('aria-valuenow', progress);
+        ui['chapter-label'].textContent = routes[state.route].chapter; ui['journey-title'].textContent = state.steps ? routes[state.route].name : 'La senda comienza'; ui['journey-copy'].textContent = state.steps ? 'Tu camino se define con cada encuentro. Puedes cambiar de ruta después de cada victoria.' : 'Una brisa recorre la hierba alta. Elige hacia dónde dar el primer paso.';
+        ui['scene-kicker'].textContent = routes[state.route].chapter; ui['scene-title'].textContent = state.steps ? routes[state.route].name : 'La senda de los aventureros'; ui['scene-text'].textContent = routes[state.route].text;
+        ui['journey-count'].textContent = `Jornada ${Math.max(1, state.steps + 1)}`; ui['gold-count'].textContent = `${state.gold} gp`; ui['kill-stat'].textContent = state.kills; ui['step-stat'].textContent = state.steps;
+        ui['attack-stat'].textContent = dataForClass().attack; ui['defense-stat'].textContent = dataForClass().defense; ui['gear-rating'].textContent = `Defensa ${character.defense + gearDefense()}`;
+        ui['auto-hunt'].textContent = state.autoHunt ? 'Auto: activo' : 'Auto: desactivado'; ui['auto-hunt'].setAttribute('aria-pressed', String(state.autoHunt));
+        renderEquipment(); renderInventory(); renderShop(); renderDecisions(); renderMap(); renderZoneMonsters(); renderSkills(); renderSpells(); renderQuests(); renderEnemy();
+      }
+      function renderEquipment() {
+        ui['equipment-grid'].replaceChildren();
+        [...slots, 'shield'].forEach(slot => {
+          const box = document.createElement('div'); box.className = 'equip-slot';
+          const label = slot === 'shield' ? 'Escudo' : slotNames[slot]; const item = state.equipment[slot];
+          box.innerHTML = `<span class="slot-label">${label}</span><span class="slot-item${item ? '' : ' empty'}">${item || 'Vacío'}</span>`; ui['equipment-grid'].append(box);
+        });
+      }
+      function renderInventory() {
+        ui['inventory'].replaceChildren(); ui['bag-count'].textContent = `${state.inventory.filter(Boolean).length} / ${maxBagSlots}`;
+        for (let index = 0; index < maxBagSlots; index += 1) {
+          const stack = state.inventory[index], slot = document.createElement('button'); slot.className = `bag-slot${index === state.selectedItemIndex ? ' selected' : ''}`; slot.type = 'button';
+          if (stack) {
+            const name = itemName(stack), count = itemCount(stack), image = document.createElement('img'), fallback = document.createElement('span');
+            slot.setAttribute('aria-label', `${name}${count > 1 ? `, cantidad ${count}` : ''}`); slot.setAttribute('aria-pressed', String(index === state.selectedItemIndex));
+            image.src = itemSprite(name); image.alt = ''; image.addEventListener('error', () => { image.remove(); slot.classList.add('sprite-failed'); }); fallback.className = 'item-fallback'; fallback.textContent = '✦'; slot.append(image, fallback);
+            if (count > 1) { const quantity = document.createElement('span'); quantity.className = 'stack-count'; quantity.textContent = String(count); slot.append(quantity); }
+            slot.addEventListener('click', () => { state.selectedItemIndex = index; renderInventory(); });
+          } else { slot.disabled = true; slot.setAttribute('aria-label', 'Casilla vacía'); }
+          ui['inventory'].append(slot);
+        }
+        const index = state.selectedItemIndex, stack = state.inventory[index]; ui['item-inspector'].hidden = !stack;
+        if (!stack) return;
+        const name = itemName(stack), count = itemCount(stack), item = items[name], canEquip = item.slot === 'weapon' || item.slot === 'shield' || slots.includes(item.slot);
+        ui['selected-item-sprite'].src = itemSprite(name); ui['selected-item-sprite'].onerror = () => { ui['selected-item-sprite'].hidden = true; }; ui['selected-item-sprite'].onload = () => { ui['selected-item-sprite'].hidden = false; };
+        ui['selected-item-name'].textContent = name; ui['selected-item-count'].textContent = `${count} ${count === 1 ? 'unidad' : 'unidades'}`; ui['item-actions'].replaceChildren();
+        if (canEquip) addInspectorButton('Equipar', () => equipItem(index));
+        if (item.slot === 'consumable') addInspectorButton('Usar', () => useItem(index));
+        if (item.slot === 'rune') addInspectorButton('Usar en combate', () => { const spell = spells.find(entry => entry.item === name); if (spell && enemy) combat('spell', spell.id); else toast('Las runas solo se usan durante un combate.'); });
+        ui['stack-tools'].hidden = !stackableItems.has(name) || count < 2; ui['split-amount'].max = String(Math.max(1, count - 1)); ui['split-amount'].value = String(Math.max(1, Math.floor(count / 2))); ui['split-stack'].disabled = count < 2;
+        if (item.slot === 'container') addInspectorButton('Abrir mochila', () => openContainer(index));
+        renderContainer();
+      }
+      function containerAt(index) { const stack = state.inventory[index]; if (!stack) return []; if (!Array.isArray(stack.contents)) stack.contents = []; return stack.contents; }
+      function openContainer(index) { if (!state.inventory[index] || items[itemName(state.inventory[index])].slot !== 'container') return; state.openContainerIndex = index; renderInventory(); }
+      function renderContainer() {
+        const index = Number.isInteger(state.openContainerIndex) ? state.openContainerIndex : -1, stack = state.inventory[index];
+        if (!stack || !items[itemName(stack)] || items[itemName(stack)].slot !== 'container') { ui['container-window'].hidden = true; return; }
+        const contents = containerAt(index); ui['container-window'].hidden = false; ui['container-title'].textContent = `${itemName(stack)} · ${contents.length} / ${maxContainerSlots}`; ui['container-grid'].replaceChildren();
+        for (let slotIndex = 0; slotIndex < maxContainerSlots; slotIndex += 1) {
+          const content = contents[slotIndex], slot = document.createElement('button'); slot.className = 'container-slot'; slot.type = 'button';
+          if (content) { const image = document.createElement('img'); image.src = itemSprite(itemName(content)); image.alt = itemName(content); image.addEventListener('error', () => image.remove()); slot.append(image); if (itemCount(content) > 1) { const count = document.createElement('span'); count.className = 'stack-count'; count.textContent = String(itemCount(content)); slot.append(count); } slot.title = `${itemName(content)} x${itemCount(content)}`; slot.addEventListener('click', () => { state.selectedItemIndex = -1; toast(`${itemName(content)} está dentro de ${itemName(stack)}.`); }); } else { slot.disabled = true; slot.textContent = '·'; }
+          ui['container-grid'].append(slot);
+        }
+        const selected = state.inventory[state.selectedItemIndex]; ui['store-in-container'].disabled = !selected || state.selectedItemIndex === index || contents.length >= maxContainerSlots || items[itemName(selected)].slot === 'container';
+      }
+      function storeSelectedInContainer() {
+        const index = Number.isInteger(state.openContainerIndex) ? state.openContainerIndex : -1, selectedIndex = state.selectedItemIndex, selected = state.inventory[selectedIndex]; if (!selected || selectedIndex === index) return;
+        const contents = containerAt(index); if (contents.length >= maxContainerSlots) { toast('La mochila está llena.'); return; }
+        contents.push({ name: itemName(selected), count: itemCount(selected) }); state.inventory[selectedIndex] = null; state.selectedItemIndex = -1; addLog(`Guardas ${itemName(selected)} dentro de la mochila.`); render();
+      }
+      function addInspectorButton(label, action) { const button = document.createElement('button'); button.className = 'button'; button.type = 'button'; button.textContent = label; button.addEventListener('click', action); ui['item-actions'].append(button); }
+      function removeFromStack(index, amount = 1) {
+        const stack = state.inventory[index], count = itemCount(stack);
+        if (count <= amount) { state.inventory[index] = null; if (state.openContainerIndex === index) state.openContainerIndex = -1; if (state.selectedItemIndex === index) state.selectedItemIndex = -1; } else stack.count = count - amount;
+      }
+      function equipItem(index) {
+        const stack = state.inventory[index], name = itemName(stack), item = items[name], slot = item.slot, replaced = state.equipment[slot];
+        state.equipment[slot] = name; removeFromStack(index); if (replaced) addItem(replaced);
+        addLog(`Te equipas ${name}${replaced ? ` y guardas ${replaced} en la mochila` : ''}.`); render(); toast(`${name} equipado`);
+      }
+      function useItem(index) {
+        const name = itemName(state.inventory[index]), item = items[name];
+        if (item.mana) { state.mana = Math.min(maxMana(), state.mana + item.mana); addLog(`Usas ${name} y recuperas ${item.mana} puntos de maná.`); }
+        else { state.hp = Math.min(maxHp(), state.hp + item.heal); addLog(`Usas ${name} y recuperas ${item.heal} puntos de salud.`); }
+        removeFromStack(index); render();
+      }
+      function splitStack() {
+        const index = state.selectedItemIndex, stack = state.inventory[state.selectedItemIndex], freeSlot = state.inventory.findIndex(item => !item); if (!Number.isInteger(index) || index < 0 || !stack || !stackableItems.has(itemName(stack)) || freeSlot < 0) { toast('No hay una pila válida para dividir o falta espacio.'); return; }
+        const amount = Math.floor(Number(ui['split-amount'].value)), count = itemCount(stack);
+        if (!Number.isFinite(amount) || amount < 1 || amount >= count) { toast('Elige una cantidad menor que la pila.'); return; }
+        stack.count = Math.max(1, count - amount); state.inventory[freeSlot] = { name: itemName(stack), count: amount }; state.selectedItemIndex = freeSlot; addLog(`Separaste ${amount} ${itemName(stack)} de la pila.`); render();
+      }
+      function renderShop() {
+        ui['shop-list'].replaceChildren(); ui['shop-quantity-row'].hidden = false;
+        document.querySelectorAll('[data-shop-mode]').forEach(button => button.classList.toggle('active', button.dataset.shopMode === shopMode));
+        const offers = shopMode === 'buy' ? shopItems.map(name => ({ name, count: 0 })) : state.inventory.map((stack, index) => stack ? ({ name: itemName(stack), count: itemCount(stack), index }) : null).filter(Boolean);
+        if (!offers.length) { const empty = document.createElement('p'); empty.className = 'empty-note'; empty.textContent = shopMode === 'buy' ? 'No hay mercancía.' : 'No tienes objetos para vender.'; ui['shop-list'].append(empty); return; }
+        offers.forEach(offer => {
+          const item = items[offer.name], row = document.createElement('div'); row.className = 'shop-row';
+          const image = document.createElement('img'); image.src = itemSprite(offer.name); image.alt = ''; image.addEventListener('error', () => image.remove());
+          const info = document.createElement('span'), name = document.createElement('strong'), price = document.createElement('small'); name.textContent = offer.name; price.textContent = shopMode === 'buy' ? `${shopPrice(offer.name)} gp c/u` : `${offer.count} en bolsa · ${sellPrice(offer.name) * offer.count} gp`; info.append(name, price);
+          const requested = Math.max(1, Math.floor(Number(ui['shop-quantity'].value) || 1)), sellQuantity = Math.min(requested, offer.count || requested);
+          const button = document.createElement('button'); button.className = 'button'; button.type = 'button'; button.textContent = shopMode === 'buy' ? `Comprar ${requested}` : `Vender ${sellQuantity}`;
+          button.disabled = shopMode === 'sell' ? false : state.gold < shopPrice(offer.name) * Math.max(1, Number(ui['shop-quantity'].value) || 1);
+          button.addEventListener('click', () => shopMode === 'buy' ? buyItem(offer.name) : sellItem(offer.index, sellQuantity)); row.append(image, info, button); ui['shop-list'].append(row);
+        });
+      }
+      function shopPrice(name) { return Math.max(1, Math.ceil(items[name].value * 1.5)); }
+      function sellPrice(name) { return Math.max(1, Math.floor(items[name].value * .5)); }
+      function canFit(name, quantity) {
+        const freeSlots = state.inventory.filter(stack => !stack).length;
+        if (!stackableItems.has(name)) return freeSlots >= quantity;
+        const remainingCapacity = state.inventory.reduce((sum, stack) => stack && itemName(stack) === name ? sum + 100 - itemCount(stack) : sum, 0) + freeSlots * 100;
+        return remainingCapacity >= quantity;
+      }
+      function buyItem(name) {
+        const quantity = Math.min(100, Math.max(1, Math.floor(Number(ui['shop-quantity'].value) || 1))), total = shopPrice(name) * quantity;
+        if (state.gold < total) { toast('No tienes suficiente oro.'); return; }
+        if (!canFit(name, quantity)) { toast('No hay espacio suficiente en la mochila.'); return; }
+        state.gold -= total; addItem(name, quantity); addLog(`Compras ${quantity} ${name} por ${total} gp.`); render();
+      }
+      function sellItem(index, requested = 1) {
+        const stack = state.inventory[index]; if (!stack) return;
+        const name = itemName(stack), quantity = Math.min(itemCount(stack), Math.max(1, requested)), total = sellPrice(name) * quantity; state.gold += total; removeFromStack(index, quantity);
+        if (state.selectedItemIndex === index) state.selectedItemIndex = -1; else if (state.selectedItemIndex > index) state.selectedItemIndex -= 1;
+        addLog(`Vendes ${quantity} ${name} por ${total} gp.`); render();
+      }
+      function renderDecisions() {
+        ui['decision-options'].replaceChildren(); ui['decision-panel'].hidden = Boolean(enemy);
+        routes[state.route].choices.forEach(choice => { const button = document.createElement('button'); button.className = 'button decision'; button.type = 'button'; button.disabled = state.level < routes[choice.id].minLevel; button.innerHTML = `<strong>${choice.title}</strong><span>${button.disabled ? `Requiere nivel ${routes[choice.id].minLevel}` : choice.detail}</span>`; button.addEventListener('click', () => travel(choice.id)); ui['decision-options'].append(button); });
+      }
+      function renderMap() {
+        document.querySelectorAll('[data-zone]').forEach(button => {
+          const route = routes[button.dataset.zone], locked = state.level < route.minLevel;
+          button.disabled = locked; button.classList.toggle('selected', button.dataset.zone === state.route); button.setAttribute('aria-pressed', String(button.dataset.zone === state.route));
+          button.title = locked ? `${route.name}: requiere nivel ${route.minLevel}` : route.name;
+        });
+        const selected = routes[state.route]; ui['map-zone-name'].textContent = selected.name; ui['map-zone-level'].textContent = `Nivel ${selected.minLevel}+`;
+        ui['map-hunt-button'].disabled = Boolean(enemy) || state.level < selected.minLevel;
+      }
+      function renderZoneMonsters() {
+        const encounters = routes[state.route].encounters, totalWeight = encounters.reduce((sum, [, weight]) => sum + weight, 0);
+        ui['zone-monster-count'].textContent = `${encounters.length} especies`; ui['zone-monsters'].replaceChildren();
+        encounters.forEach(([id, weight]) => {
+          const monster = monsters[id], locked = Boolean(monster.minLevel && state.level < monster.minLevel), row = document.createElement('div'); row.className = `zone-monster${locked ? ' locked' : ''}`;
+          const image = document.createElement('img'); image.src = spriteUrl(monster.sprite); image.alt = ''; image.addEventListener('error', () => { if (image.dataset.fallbackTried !== '1') { image.dataset.fallbackTried = '1'; image.src = spriteUrl(monster.sprite, true); } else image.hidden = true; });
+          const name = document.createElement('strong'); name.textContent = monster.name; const chance = document.createElement('small'); chance.textContent = locked ? `Nivel ${monster.minLevel}+` : `${Math.round(weight / totalWeight * 100)}% de aparicion`;
+          row.append(image, name, chance); ui['zone-monsters'].append(row);
+        });
+      }
+      function renderQuests() {
+        if (!ui['quest-list']) return;
+        ui['quest-list'].replaceChildren();
+        quests.forEach(quest => {
+          const card = document.createElement('article'); card.className = 'quest-card';
+          const title = document.createElement('h4'); title.textContent = quest.title;
+          const description = document.createElement('p'); description.textContent = `${quest.description} · Nv. ${quest.level}+`;
+          const reward = document.createElement('small'); reward.textContent = `Recompensa: ${quest.xp} XP · ${quest.gold} gp`;
+          const progress = Number(state.questProgress?.[quest.id]) || 0, accepted = state.acceptedQuests?.includes(quest.id), claimed = state.claimedQuests?.includes(quest.id);
+          card.append(title, description, reward);
+          if (claimed) { const status = document.createElement('small'); status.textContent = '✓ Encargo completado'; card.append(status); }
+          else if (!accepted) { const button = document.createElement('button'); button.className = 'button'; button.type = 'button'; button.textContent = state.level < quest.level ? `Requiere nivel ${quest.level}` : 'Aceptar encargo'; button.disabled = state.level < quest.level; button.addEventListener('click', () => { state.acceptedQuests.push(quest.id); state.questProgress[quest.id] = 0; render(); }); card.append(button); }
+          else { const bar = document.createElement('div'); bar.className = 'quest-track'; const fill = document.createElement('span'); fill.style.width = `${Math.min(100, progress / quest.target * 100)}%`; bar.append(fill); const count = document.createElement('small'); count.textContent = `${Math.min(progress, quest.target)} / ${quest.target} derrotas · ${routes[quest.route].name}`; card.append(count, bar); const button = document.createElement('button'); button.className = 'button'; button.type = 'button'; button.textContent = progress >= quest.target ? 'Cobrar recompensa' : 'En curso'; button.disabled = progress < quest.target; button.addEventListener('click', () => claimQuest(quest)); card.append(button); }
+          ui['quest-list'].append(card);
+        });
+      }
+      function claimQuest(quest) {
+        if (!state.acceptedQuests.includes(quest.id) || state.claimedQuests.includes(quest.id) || (state.questProgress[quest.id] || 0) < quest.target) return;
+        state.claimedQuests.push(quest.id); state.gold += quest.gold; state.xp += quest.xp;
+        while (state.level < maxLevel && state.xp >= xpAt(state.level + 1)) { state.level += 1; state.hp = Math.min(maxHp(), state.hp + Math.ceil(maxHp() * .35)); }
+        addLog(`Completas «${quest.title}»: ${quest.xp} XP y ${quest.gold} gp.`); toast(`Quest completada: ${quest.title}`); render();
+      }
+      function selectZone(routeId) {
+        const route = routes[routeId]; if (!route || enemy || busy) return;
+        if (state.level < route.minLevel) { toast(`Necesitas nivel ${route.minLevel} para cazar aquí.`); return; }
+        state.route = routeId; addLog(`Seleccionas ${route.name} en el mapa.`); render();
+      }
+      function renderSkills() {
+        const character = classes[state.classId]; ui['skill-class-label'].textContent = character.name; ui['skill-list'].replaceChildren();
+        character.skills.forEach(skill => {
+          const level = state.skills[skill] || 0, progress = state.skillProgress[skill] || 0, required = skillRequirement(skill, level), row = document.createElement('div'); row.className = 'skill-row';
+          const label = document.createElement('span'); label.textContent = skillNames[skill]; const value = document.createElement('strong'); value.textContent = String(level);
+          const track = document.createElement('div'); track.className = 'skill-track'; const fill = document.createElement('div'); fill.className = 'skill-fill'; fill.style.width = `${Math.min(100, progress / required * 100)}%`; track.append(fill); row.append(label, value, track); ui['skill-list'].append(row);
+        });
+      }
+      function trainSkill(skill, amount) {
+        if (!skill || !classes[state.classId].skills.includes(skill)) return;
+        state.skillProgress[skill] = (state.skillProgress[skill] || 0) + amount;
+        while (state.skillProgress[skill] >= skillRequirement(skill, state.skills[skill])) {
+          state.skillProgress[skill] -= skillRequirement(skill, state.skills[skill]); state.skills[skill] += 1;
+          addLog(`Tu habilidad ${skillNames[skill]} avanza al nivel ${state.skills[skill]}.`); toast(`${skillNames[skill]} ${state.skills[skill]}`);
+        }
+      }
+      function countItem(name) { return state.inventory.reduce((sum, stack) => stack && itemName(stack) === name ? sum + itemCount(stack) : sum, 0); }
+      function renderSpells() {
+        ui['spell-list'].replaceChildren();
+        spells.filter(spell => spell.vocations.includes(state.classId)).forEach(spell => {
+          const group = spell.kind.includes('heal') ? 'healing' : 'attack', cooldown = Math.max(0, Math.ceil((Math.max(state.cooldowns[spell.id] || 0, state.cooldowns[group] || 0) - Date.now()) / 1000)), runeCount = spell.item ? countItem(spell.item) : 1, locked = state.level < spell.level;
+          const button = document.createElement('button'); button.className = `button spell-button${locked ? ' locked' : ''}`; button.type = 'button'; button.disabled = locked || !enemy || busy || state.mana < spell.mana || cooldown > 0 || runeCount < 1;
+          const name = document.createElement('strong'); name.textContent = spell.name; const detail = document.createElement('small'); detail.textContent = locked ? `Requiere nivel ${spell.level}` : spell.item ? `${spell.description} · ${runeCount} runas` : `${spell.description}${cooldown ? ` · recarga ${cooldown}` : ''}`; const cost = document.createElement('span'); cost.className = 'spell-cost'; cost.textContent = `${spell.mana} MP`;
+          button.append(name, detail, cost); button.addEventListener('click', () => combat('spell', spell.id)); ui['spell-list'].append(button);
+        });
+      }
+      function renderEnemy() {
+        ui.battle.hidden = !enemy; if (!enemy) return;
+        const data = monsters[enemy.id], ratio = Math.max(0, enemy.hp / enemy.maxHp);
+        const character = classes[state.classId], hpMax = maxHp();
+        ui['combat-player-name'].textContent = state.name; ui['combat-player-level'].textContent = `${character.name} · Nivel ${state.level}`; ui['combat-player-hp'].textContent = `${state.hp} / ${hpMax}`; ui['combat-player-hp-bar'].style.width = `${state.hp / hpMax * 100}%`;
+        const playerSprite = spriteUrl(character.sprite);
+        if (ui['player-sprite'].dataset.spriteName !== character.sprite) bindSprite(ui['player-sprite'], ui['player-image'], character.sprite, `${character.name} en combate`);
+        ui['monster-name'].textContent = data.name; ui['monster-note'].textContent = data.note; ui['monster-hp-label'].textContent = `${enemy.hp} / ${enemy.maxHp}`; ui['monster-hp-bar'].style.width = `${ratio * 100}%`; ui['monster-hp-bar'].parentElement.setAttribute('aria-valuemax', enemy.maxHp); ui['monster-hp-bar'].parentElement.setAttribute('aria-valuenow', enemy.hp);
+        const monsterSprite = spriteUrl(data.sprite);
+        if (ui['monster-sprite'].dataset.spriteName !== data.sprite) bindSprite(ui['monster-sprite'], ui['monster-image'], data.sprite, `${data.name}, criatura inspirada en Tibia`);
+        ui['special-action'].textContent = `${dataForClass().glyph} ${dataForClass().special}${state.specialCooldown ? ` (${state.specialCooldown})` : ''}`; ui['special-action'].disabled = busy || state.specialCooldown > 0;
+        document.querySelectorAll('[data-combat]').forEach(button => { button.disabled = busy; });
+        renderSpells(); ui.battle.dataset.biome = state.route;
+      }
+      function dataForClass() {
+        const character = classes[state.classId], weapon = items[state.equipment.weapon], skill = weapon && weapon.skill;
+        const skillBonus = skill === 'magic' ? Math.floor((state.skills.magic - (state.classId === 'druid' || state.classId === 'sorcerer' ? 2 : 0)) * .45) : Math.floor(Math.max(0, (state.skills[skill] || 10) - 10) * .45);
+        return { ...character, attack: character.attack + state.level - 1 + gearAttack() + skillBonus, defense: character.defense + gearDefense() + Math.floor(Math.max(0, state.skills.shielding - 10) * .2) };
+      }
+      function travel(routeId) {
+        if (enemy || busy) return;
+        const route = routes[routeId]; if (!route || state.level < route.minLevel) { toast(`Esta zona requiere nivel ${route ? route.minLevel : 1}.`); return; }
+        state.route = routeId; state.steps += 1; ui['game-view'].dataset.region = routeId;
+        let pool = route.encounters.filter(([monsterId]) => !monsters[monsterId].minLevel || state.level >= monsters[monsterId].minLevel);
+        if (pool.length > 1 && state.lastMonster) { const variety = pool.filter(([monsterId]) => monsterId !== state.lastMonster); if (variety.length) pool = variety; }
+        const totalWeight = pool.reduce((sum, [, weight]) => sum + weight, 0); let roll = Math.random() * totalWeight;
+        let id = pool[0][0]; for (const [monsterId, weight] of pool) { roll -= weight; if (roll < 0) { id = monsterId; break; } }
+        state.lastMonster = id;
+        const data = monsters[id], scaling = Math.min(1.4, 1 + Math.max(0, state.level - 4) * .045);
+        enemy = { id, hp: Math.floor(data.hp * scaling), maxHp: Math.floor(data.hp * scaling) }; guarding = false; ui['game-view'].classList.add('in-combat');
+        ui['battle-message'].textContent = `${data.name} te corta el paso. ¿Cómo responderás?`; addLog(`Avanzas hacia ${routes[routeId].name} y aparece ${data.name}.`); render();
+      }
+      function castSpell(spellId) {
+        const spell = spells.find(entry => entry.id === spellId), runeIndex = spell?.item ? state.inventory.findIndex(stack => itemName(stack) === spell.item) : -1;
+        if (!spell || !spell.vocations.includes(state.classId) || state.level < spell.level || state.mana < spell.mana || Math.max(state.cooldowns[spell.id] || 0, state.cooldowns[spell.kind.includes('heal') ? 'healing' : 'attack'] || 0) > Date.now() || (spell.item && runeIndex < 0)) { toast('No cumples los requisitos del hechizo o la runa.'); return false; }
+        state.mana -= spell.mana; const group = spell.kind.includes('heal') ? 'healing' : 'attack'; state.cooldowns[spell.id] = Date.now() + spell.cooldown * 1000; state.cooldowns[group] = state.cooldowns[spell.id];
+        if (spell.item) removeFromStack(runeIndex);
+        trainSkill('magic', spell.item ? 3 : 5);
+        if (spell.kind.includes('heal')) {
+          const restored = Math.round(spell.power + state.skills.magic * .8); state.hp = Math.min(maxHp(), state.hp + restored);
+          ui['battle-message'].textContent = `${spell.name} restaura ${restored} de salud.`; addLog(`Lanzas ${spell.name} y recuperas ${restored} HP.`);
+        } else {
+          const damage = Math.max(4, Math.floor(dataForClass().attack * spell.power + state.skills.magic * .7 + Math.random() * 6 - monsters[enemy.id].defense)); enemy.hp = Math.max(0, enemy.hp - damage);
+          ui['battle-message'].textContent = `${spell.name}: ${damage} de daño.`; animateCombatant('player-image', 'is-attacking'); animateCombatant('monster-image', 'is-hit'); addLog(`Lanzas ${spell.name} y causas ${damage} de daño${spell.item ? `; consumes ${spell.item}` : ''}.`);
+        }
+        return true;
+      }
+      function combat(action, spellId = '') {
+        if (!enemy || busy) return; let character = dataForClass(); const monster = monsters[enemy.id]; busy = true;
+        if (action === 'spell') {
+          if (!castSpell(spellId)) { busy = false; render(); return; }
+          character = dataForClass();
+        }
+        else if (action === 'guard') { guarding = true; trainSkill('shielding', 3); ui['battle-message'].textContent = 'Te preparas para reducir el próximo golpe.'; addLog('Adoptas una postura defensiva y entrenas Shielding.'); }
+        else if (action === 'special' && state.specialCooldown === 0) {
+          if (state.classId === 'druid') { trainSkill('magic', 4); const heal = Math.round(maxHp() * .28) + Math.floor(state.skills.magic / 2); state.hp = Math.min(maxHp(), state.hp + heal); ui['battle-message'].textContent = `La naturaleza restaura ${heal} de salud.`; addLog(`Tu magia druídica te cura ${heal} puntos de salud y entrena Magic Level.`); }
+          else { const trainingSkill = state.classId === 'rogue' ? 'distance' : state.classId === 'knight' ? (items[state.equipment.weapon].skill || 'sword') : 'magic'; trainSkill(trainingSkill, 4); const multiplier = state.classId === 'sorcerer' ? 2.25 : state.classId === 'rogue' ? 1.8 : 2; const damage = Math.max(3, Math.floor(character.attack * multiplier + Math.random() * 5 - monster.defense)); enemy.hp = Math.max(0, enemy.hp - damage); ui['battle-message'].textContent = `${classes[state.classId].special}: ${damage} de daño.`; animateCombatant('player-image', 'is-attacking'); animateCombatant('monster-image', 'is-hit'); addLog(`${classes[state.classId].special} inflige ${damage} de daño y entrena ${skillNames[trainingSkill]}.`); }
+          state.specialCooldown = state.classId === 'knight' ? 2 : 3;
+        } else {
+          const trainingSkill = items[state.equipment.weapon].skill || 'sword'; trainSkill(trainingSkill, 3); const damage = Math.max(2, character.attack - monster.defense + Math.floor(Math.random() * 7) - 2); enemy.hp = Math.max(0, enemy.hp - damage); ui['battle-message'].textContent = `Tu ataque causa ${damage} de daño.`; animateCombatant('player-image', 'is-attacking'); animateCombatant('monster-image', 'is-hit'); addLog(`Atacas a ${monster.name} e infliges ${damage} de daño; entrenas ${skillNames[trainingSkill]}.`);
+        }
+        if (enemy.hp <= 0) { winFight(); busy = false; render(); if (state.autoHunt) window.setTimeout(autoHuntStep, 250); return; }
+        renderEnemy(); window.setTimeout(() => { if (!enemy) { busy = false; return; }
+          const damage = Math.max(2, Math.floor(monster.attack - character.defense * .55 - (guarding ? character.defense * 1.8 : 0) + Math.random() * 5)); animateCombatant('monster-image', 'is-attacking'); animateCombatant('player-image', 'is-hit'); guarding = false; state.hp = Math.max(0, state.hp - damage); state.mana = Math.min(maxMana(), state.mana + 5); ui['battle-message'].textContent = `${monster.name} te alcanza: ${damage} de daño.`; addLog(`${monster.name} te golpea y causa ${damage} de daño.`);
+          if (state.specialCooldown > 0) state.specialCooldown -= 1;
+          
+          if (state.hp <= 0) { state.hp = Math.max(1, Math.floor(maxHp() * .6)); state.gold = Math.floor(state.gold * .8); enemy = null; ui['game-view'].classList.remove('in-combat'); busy = false; ui['battle-message'].textContent = 'Te retiras a un lugar seguro y recuperas parte de tus fuerzas.'; addLog('Caes inconsciente y despiertas en el último refugio; pierdes parte del oro.'); toast('Te has retirado al refugio'); }
+          else { busy = false; }
+          render(); if (state.autoHunt) window.setTimeout(autoHuntStep, 350);
+        }, 520);
+      }
+      function winFight() {
+        const data = monsters[enemy.id], gold = Math.floor(data.gold[0] + Math.random() * (data.gold[1] - data.gold[0] + 1)); state.gold += gold; state.kills += 1;
+        if (state.autoHunt) state.autoKills += 1;
+        const xp = data.exp;
+        state.xp += xp; addLog(`Vences a ${data.name}: ${xp} XP y ${gold} gp.`);
+        state.acceptedQuests.forEach(id => { const quest = quests.find(entry => entry.id === id); if (quest && quest.route === state.route && !state.claimedQuests.includes(id)) state.questProgress[id] = (state.questProgress[id] || 0) + 1; });
+        const drops = data.loot.filter(([name, chance]) => Math.random() < chance).map(([name]) => name);
+        const dropCounts = drops.reduce((acc, name) => { acc[name] = (acc[name] || 0) + 1; return acc; }, {});
+        Object.entries(dropCounts).forEach(([name, quantity]) => addItem(name, quantity));
+        if (drops.length) { const summary = Object.entries(dropCounts).map(([name, quantity]) => `${name}${quantity > 1 ? ` ×${quantity}` : ''}`).join(', '); addLog(`Botín: ${summary}.`); toast(`Botín: ${summary}`); }
+        while (state.level < maxLevel && state.xp >= xpAt(state.level + 1)) { state.level += 1; state.hp = Math.min(maxHp(), state.hp + Math.ceil(maxHp() * .35)); addLog(`¡Subes al nivel ${state.level}! Tu experiencia crece con cada nivel.`); toast(`¡Nivel ${state.level}!`); }
+        if (state.level === maxLevel) state.xp = Math.min(state.xp, xpAt(maxLevel));
+        enemy = null; ui['game-view'].classList.remove('in-combat'); state.specialCooldown = Math.max(0, state.specialCooldown - 1); ui['battle-message'].textContent = `${data.name} ha sido derrotado. Decide tu próximo paso.`;
+
+      }
+      function toggleAutoHunt() {
+        state.autoHunt = !state.autoHunt; state.autoKills = 0; render();
+        if (state.autoHunt) { addLog(`Inicias la cacería automática en ${routes[state.route].name}.`); autoHuntStep(); }
+        else { window.clearTimeout(autoTimer); addLog('Detienes la cacería automática.'); }
+      }
+      function autoHuntStep() {
+        if (!state || !state.autoHunt || busy) return;
+        if (!enemy) {
+          if (state.hp < maxHp() * .32) {
+            const potionIndex = state.inventory.findIndex(stack => stack && items[itemName(stack)]?.heal);
+            if (potionIndex >= 0) { useItem(potionIndex); autoTimer = window.setTimeout(autoHuntStep, 700); return; }
+            state.hp = Math.min(maxHp(), state.hp + Math.max(2, Math.ceil(maxHp() * .08))); render(); autoTimer = window.setTimeout(autoHuntStep, 900); return;
+          }
+          travel(state.route); autoTimer = window.setTimeout(autoHuntStep, 400); return;
+        }
+        if (state.hp < maxHp() * .38) {
+          const healingSpell = spells.filter(spell => spell.vocations.includes(state.classId) && spell.kind.includes('heal') && state.level >= spell.level && state.mana >= spell.mana && Math.max(state.cooldowns[spell.id] || 0, state.cooldowns.healing || 0) <= Date.now() && (!spell.item || countItem(spell.item) > 0)).sort((a,b) => b.power - a.power)[0];
+          if (healingSpell) { combat('spell', healingSpell.id); return; }
+        }
+        const damageSpell = spells.filter(spell => spell.vocations.includes(state.classId) && spell.kind.includes('damage') && state.level >= spell.level && state.mana >= spell.mana && Math.max(state.cooldowns[spell.id] || 0, state.cooldowns.attack || 0) <= Date.now() && (!spell.item || countItem(spell.item) > 0)).sort((first, second) => second.power - first.power)[0];
+        if (damageSpell) combat('spell', damageSpell.id);
+        else if (state.specialCooldown === 0) combat('special');
+        else combat('attack');
+      }
+      function resetMapView() { mapX = 0; mapY = 0; mapScale = 1; renderMapView(); }
+      function renderMapView() {
+        const map = ui['world-map'], bounds = map.getBoundingClientRect();
+        const mapSvg = map.querySelector('.world-map-svg');
+        if (mapSvg) mapSvg.style.transform = `translate(${mapX}px, ${mapY}px) scale(${mapScale})`;
+        if (!bounds.width || !bounds.height) return;
+        map.querySelectorAll('.map-node').forEach(node => {
+          if (!node.dataset.mapBaseLeft) { node.dataset.mapBaseLeft = node.style.left; node.dataset.mapBaseTop = node.style.top; }
+          const baseLeft = parseFloat(node.dataset.mapBaseLeft), baseTop = parseFloat(node.dataset.mapBaseTop);
+          const x = (baseLeft / 100 * bounds.width - bounds.width / 2) * mapScale + bounds.width / 2 + mapX;
+          const y = (baseTop / 100 * bounds.height - bounds.height / 2) * mapScale + bounds.height / 2 + mapY;
+          node.style.left = `${x / bounds.width * 100}%`; node.style.top = `${y / bounds.height * 100}%`;
+        });
+      }
+      function setupMapNavigation() {
+        const map = ui['world-map'];
+        map.addEventListener('pointerdown', event => { if (event.target.closest('.map-node, .map-tools')) return; mapDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: mapX, startY: mapY }; map.classList.add('dragging'); map.setPointerCapture(event.pointerId); });
+        map.addEventListener('pointermove', event => { if (!mapDrag || mapDrag.id !== event.pointerId) return; mapX = mapDrag.startX + event.clientX - mapDrag.x; mapY = mapDrag.startY + event.clientY - mapDrag.y; renderMapView(); });
+        const endDrag = event => { if (!mapDrag || mapDrag.id !== event.pointerId) return; mapDrag = null; map.classList.remove('dragging'); try { map.releasePointerCapture(event.pointerId); } catch {} };
+        map.addEventListener('pointerup', endDrag); map.addEventListener('pointercancel', endDrag); map.addEventListener('wheel', event => { event.preventDefault(); mapScale = Math.min(2.8, Math.max(.65, mapScale + (event.deltaY < 0 ? .12 : -.12))); renderMapView(); }, { passive: false }); map.addEventListener('dblclick', resetMapView); renderMapView();
+      }
+      document.querySelectorAll('[data-map-zoom]').forEach(button => button.addEventListener('click', () => { const action = button.dataset.mapZoom; if (action === 'reset') resetMapView(); else { mapScale = Math.min(2.8, Math.max(.65, mapScale + (action === 'in' ? .2 : -.2))); renderMapView(); } }));
+      function renameCharacter() { if (!state) return; const heading = ui['player-name']; if (heading.contentEditable === 'true') { const entered = heading.textContent.trim(); heading.contentEditable = 'false'; if (entered) { state.name = entered.slice(0, 24); addLog(`Ahora te conocen como ${state.name}.`); saveGame(true); } ui['rename-character'].textContent = 'Cambiar nombre'; render(); return; } heading.contentEditable = 'true'; heading.focus(); document.execCommand('selectAll', false, null); ui['rename-character'].textContent = 'Guardar nombre'; }
+      function render() { if (!state) return; renderProgress(); renderMapView(); }
+      function currentSaveData() { state.log = [...ui.journal.querySelectorAll('p')].map(entry => entry.textContent).slice(-30); return JSON.parse(JSON.stringify({ ...state, savedAt: new Date().toISOString() })); }
+      function saveGame(silent = false) {
+        if (!state) return; state.log = [...ui.journal.querySelectorAll('p')].map(entry => entry.textContent).slice(-20);
+        try { localStorage.setItem('tibia-routes-save', JSON.stringify({ ...state, savedAt: new Date().toISOString() })); if (!silent) toast('Aventura guardada en este navegador.'); }
+        catch { toast('No se pudo guardar en este navegador.'); }
+      }
+      function getSessions() { try { const data = JSON.parse(localStorage.getItem('tibia-routes-sessions') || '[]'); return Array.isArray(data) ? data.filter(entry => entry && entry.id && entry.data) : []; } catch { return []; } }
+      function renderSessions() {
+        ui['session-list'].replaceChildren(); const sessions = getSessions();
+        if (!sessions.length) { const note = document.createElement('span'); note.className = 'empty-note'; note.textContent = 'Todavía no hay perfiles guardados en este navegador. Puedes guardar un perfil o importar una copia JSON.'; ui['session-list'].append(note); return; }
+        sessions.forEach(session => {
+          const entry = document.createElement('div'); entry.className = 'session-entry'; const label = document.createElement('span');
+          const date = new Date(session.savedAt); label.innerHTML = ''; const title = document.createElement('span'); title.textContent = session.name || session.data.name || 'Sesión'; const small = document.createElement('small'); small.textContent = `${session.data.classId} · Nivel ${session.data.level} · ${Number.isNaN(date.getTime()) ? '' : date.toLocaleString()}`; label.append(title, small);
+          const load = document.createElement('button'); load.className = 'button'; load.type = 'button'; load.textContent = 'Cargar'; load.addEventListener('click', () => { if (loadGame(session.data)) { saveGame(true); ui['session-panel'].hidden = true; ui['sessions-toggle'].setAttribute('aria-expanded', 'false'); toast(`Sesión «${session.name}» cargada.`); } });
+          const remove = document.createElement('button'); remove.className = 'button'; remove.type = 'button'; remove.textContent = '×'; remove.setAttribute('aria-label', `Eliminar sesión ${session.name}`); remove.addEventListener('click', () => { const remaining = getSessions().filter(item => item.id !== session.id); localStorage.setItem('tibia-routes-sessions', JSON.stringify(remaining)); renderSessions(); }); entry.append(label, load, remove); ui['session-list'].append(entry);
+        });
+      }
+      function saveSession() {
+        if (!state) { toast('Inicia una aventura antes de guardar una sesión.'); return; }
+        const name = ui['session-name-input'].value.trim().slice(0, 32); if (!name) { ui['session-name-input'].focus(); toast('Escribe un nombre para la sesión.'); return; }
+        try {
+          const savedAt = new Date().toISOString(), data = currentSaveData(), sessions = getSessions();
+          const entry = { id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`, name, savedAt, data: { ...data, savedAt } };
+          sessions.unshift(entry); localStorage.setItem('tibia-routes-sessions', JSON.stringify(sessions.slice(0, 12))); saveGame(true); ui['session-name-input'].value = ''; renderSessions(); toast(`Sesión «${name}» guardada.`);
+        } catch { toast('No se pudo guardar la sesión en este navegador.'); }
+      }
+
+      function exportProfile() {
+        if (!state) { toast('Inicia una aventura antes de exportar.'); return; }
+        try {
+          const payload = { format: 'rutas-de-tibia-profile', version: 1, exportedAt: new Date().toISOString(), data: currentSaveData() };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = `rutas-de-tibia-${(state.name || 'perfil').replace(/[^a-z0-9_-]/gi, '_')}.json`;
+          document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+          toast('Copia del perfil exportada.');
+        } catch { toast('No se pudo exportar el perfil.'); }
+      }
+      async function importProfile(event) {
+        const file = event.target.files?.[0]; if (!file) return;
+        try {
+          const parsed = JSON.parse(await file.text());
+          const snapshot = parsed?.data || parsed?.session?.data || parsed;
+          if (!snapshot || !classes[snapshot.classId] || !routes[snapshot.route]) throw new Error('Formato no válido');
+          if (!loadGame(snapshot)) throw new Error('No se pudo cargar');
+          saveGame(true); renderSessions(); toast('Perfil importado correctamente.');
+        } catch { toast('El archivo no es un perfil válido de Rutas de Tibia.'); }
+        finally { event.target.value = ''; }
+      }
+
+      function loadGame(snapshot = null) {
+        try { const saved = snapshot || JSON.parse(localStorage.getItem('tibia-routes-save')); if (!saved || !classes[saved.classId] || !routes[saved.route]) return false;
+          state = JSON.parse(JSON.stringify(saved)); state.name = String(state.name || `Aventurero ${classes[state.classId].name}`).slice(0, 24); state.level = Math.min(maxLevel, Math.max(1, Number(state.level) || 1)); state.xp = Math.min(xpAt(maxLevel), Math.max(0, Number(state.xp) || 0)); state.mana = Math.min(maxMana(), Math.max(0, Number(state.mana) || 35)); state.baseMana = Number(state.baseMana) || 35; state.cooldowns = saved.cooldowns || {}; state.equipment = { outfit: classes[state.classId].outfit, helmet: classes[state.classId].helmet, armor: classes[state.classId].armor, legs: classes[state.classId].legs, boots: classes[state.classId].boots, weapon: classes[state.classId].weapon, shield: '', ...(saved.equipment || {}) }; state.baseHp = Number(state.baseHp) || classes[state.classId].hp; state.autoHunt = true; state.autoKills = 0; state.containers = saved.containers || {}; state.openContainerIndex = Number.isInteger(saved.openContainerIndex) ? saved.openContainerIndex : -1; state.inventory = (Array.isArray(saved.inventory) ? saved.inventory : []).slice(0, maxBagSlots).map(stack => typeof stack === 'string' ? { name: stack, count: 1 } : stack && items[stack.name] ? stack : null); while (state.inventory.length < maxBagSlots) state.inventory.push(null); state.inventory.forEach(stack => { if (stack && items[stack.name].slot === 'container' && !Array.isArray(stack.contents)) stack.contents = []; }); state.questProgress = saved.questProgress || {}; state.acceptedQuests = Array.isArray(saved.acceptedQuests) ? saved.acceptedQuests : []; state.claimedQuests = Array.isArray(saved.claimedQuests) ? saved.claimedQuests : []; if (state.kills === 0) { const hp = state.inventory.find(stack => itemName(stack) === 'Health Potion'), meat = state.inventory.find(stack => itemName(stack) === 'Meat'); if (hp && itemCount(hp) < 4) hp.count = 4; if (meat && itemCount(meat) < 5) meat.count = 5; } state.selectedItemIndex = Number.isInteger(saved.selectedItemIndex) ? saved.selectedItemIndex : -1;
+          state.skills = { ...initialSkills(saved.classId), ...(saved.skills || {}) }; state.skillProgress = { ...Object.fromEntries(Object.keys(skillNames).map(skill => [skill, 0])), ...(saved.skillProgress || {}) }; state.lastMonster = saved.lastMonster || ''; enemy = null; guarding = false; state.log = Array.isArray(saved.log) ? saved.log : []; ui['class-view'].hidden = true; ui['game-view'].hidden = false; ui['new-adventure'].hidden = false; ui['session-create'].hidden = false; ui.journal.replaceChildren(); (state.log.length ? state.log : ['Retomas tu aventura.']).forEach(addLog); render(); window.setTimeout(autoHuntStep, 650); return true;
+        } catch { return false; }
+      }
+      ui['change-class'].addEventListener('click', showClasses); ui['new-adventure'].addEventListener('click', () => { if (window.confirm('¿Empezar una aventura nueva? Se reemplazará el progreso guardado.')) { localStorage.removeItem('tibia-routes-save'); state = null; enemy = null; showClasses(); } });
+      ui['sessions-toggle'].addEventListener('click', () => { const opening = ui['session-panel'].hidden; ui['session-panel'].hidden = !opening; ui['session-create'].hidden = !state; ui['sessions-toggle'].setAttribute('aria-expanded', String(opening)); renderSessions(); });
+      ui['save-session'].addEventListener('click', saveSession); ui['session-name-input'].addEventListener('keydown', event => { if (event.key === 'Enter') saveSession(); });
+      ui['export-profile'].addEventListener('click', exportProfile);
+      ui['import-profile-button'].addEventListener('click', () => ui['import-profile-file'].click());
+      ui['import-profile-file'].addEventListener('change', importProfile);
+      ui['rest-button'].addEventListener('click', () => { if (!state || enemy) { toast('Termina el encuentro antes de descansar.'); return; } state.hp = maxHp(); addLog('Descansas un momento y recuperas toda tu salud.'); render(); toast('Salud restaurada'); });
+      ui['save-button'].addEventListener('click', saveGame); document.querySelectorAll('[data-combat]').forEach(button => button.addEventListener('click', () => combat(button.dataset.combat)));
+      document.querySelectorAll('[data-zone]').forEach(button => button.addEventListener('click', () => selectZone(button.dataset.zone))); ui['map-hunt-button'].addEventListener('click', () => travel(state.route));
+      ui['auto-hunt'].addEventListener('click', toggleAutoHunt); document.addEventListener('click', event => { const spellButton = event.target.closest('[data-spell]'); if (spellButton) combat('spell', spellButton.dataset.spell); });
+      ui['split-stack'].addEventListener('click', splitStack); ui['shop-quantity'].addEventListener('input', renderShop);
+      document.querySelectorAll('[data-shop-mode]').forEach(button => button.addEventListener('click', () => { shopMode = button.dataset.shopMode; renderShop(); }));
+      document.querySelectorAll('.panel-body > .map-node').forEach(button => ui['world-map'].append(button));
+      ui['rename-character'].addEventListener('click', renameCharacter); ui['close-container'].addEventListener('click', () => { state.openContainerIndex = -1; renderInventory(); }); ui['store-in-container'].addEventListener('click', storeSelectedInContainer); setupMapNavigation();
+      window.addEventListener('beforeunload', () => saveGame(true)); window.addEventListener('pagehide', () => saveGame(true)); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveGame(true); });
+      makeClassCards(); renderSessions();
+      const ACTIVATION_CODE = 'RUTAS-2026-ORBE-7K9P';
+      const activationGate = document.getElementById('activation-gate');
+      document.getElementById('activation-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const entered = document.getElementById('activation-input').value.trim().toUpperCase();
+        if (entered !== ACTIVATION_CODE) { document.getElementById('activation-error').textContent = 'Código no válido. Comprueba la clave e inténtalo de nuevo.'; return; }
+        localStorage.setItem('rutas-tibia-activated', '1'); activationGate.hidden = true; document.getElementById('activation-error').textContent = '';
+        if (!loadGame()) showClasses();
+      });
+      if (localStorage.getItem('rutas-tibia-activated') === '1') activationGate.hidden = true;
+      else { activationGate.hidden = false; document.getElementById('class-view').hidden = true; document.getElementById('game-view').hidden = true; }
+      if (activationGate.hidden && !loadGame()) showClasses();
+    })();
+  </script>
+</body>
+</html>

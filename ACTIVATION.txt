@@ -1,0 +1,7 @@
+RUTAS DE TIBIA — CLAVE DE DEMOSTRACIÓN
+
+RUTAS-2026-ORBE-7K9P
+
+Se introduce en la pantalla de acceso. La activación se guarda en localStorage.
+No es una licencia segura: en GitHub Pages, el código fuente es público y la clave
+puede inspeccionarse. Para control de licencias real se necesita backend.
